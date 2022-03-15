@@ -15,14 +15,18 @@ import random, time, math
 class Universe():
     # MAIN CLASS
     
-    def __init__(self, df):
+    def __init__(self, df, year):
         # CONSTRUCTOR
         global agent_idx
         agent_idx = 0
+        # Year
+        self.year = str(year)
         # Read data from dataframe (I do not really like this)
         self.main_dataframe = df
         # List of population centres (nucleos de poblacion) if the universe
-        self.population_centres  = self.PopulationCentreBuilder()
+        population_centres = self.PopulationCentreBuilder()
+        self.population_centres  = population_centres[0]
+        self.cols_update = population_centres[1]
         # List of persons in the universe
         self.universe_persons = self.AgentsBuilder()
         # (Out-of-the (?)) universe city. Trying to model a large city.
@@ -40,6 +44,7 @@ class Universe():
         # appears just once in the dataframe), consider each row:
         for population in range(self.main_dataframe.shape[0]):
             # Select specific row
+            columns_list = self.main_dataframe.columns
             df_temp = self.main_dataframe.iloc[population]
             
             # Select some features about the population centre
@@ -50,56 +55,37 @@ class Universe():
                        "populaiton_dist_highway" : df_temp["DISTAUTOPAUTOV_M"],
                        "population_dist_train"   : df_temp["DISTESTACFERROC_M"]}
             
+            my_cols = ["HOM" + self.year, "MUJ" + self.year,
+                       "NAT" + self.year, "MOR" + self.year, 
+                       "SALDOTT" + self.year]
+            
+            my_cols_update = ["NAT", "MOR", "SALDOTT"]
+            
+            d_args = {}
+            d_args["features"] = features
+            for column in columns_list:
+                if column in my_cols:
+                    d_args[column[:len(column)-4].lower()] = df_temp[column]
             
             # Invoke Population Center constructor
             the_population = PopulationCentre(
-                    # IDENTIFICADOR NUCLEO.
+                    # year
+                    year = self.year,
+                    # identifier for population centre
                     identifier = df_temp["CODMUN"],
-                    # NOMBRE NUCLEO.
+                    # name for population centre
                     name = df_temp["Nombre"],
-                    # POBLACION MASCULINA.
-                    num_men_init = df_temp["HOM2018"],
+                    # male population
                     num_men = 0,
-                    # POBLACION FEMENINA.
-                    num_women_init = df_temp["MUJ2018"],
+                    # female population
                     num_women = 0,
-                    # NATALIDAD.
-                    natality = df_temp["NAT2018"],
-                    # MORTALIDAD.
-                    mortality = df_temp["MOR2018"],
-                    # CARACTERISTICAS (SELECCION QUE HE QUERID0)
-                    features = features,
-                    # TASA BRUTA DE NATALIDAD
-                    gross_bith_rate = df_temp["TBNAT2018"],
-                    # TASA BRUTA DE MORTALIDAD
-                    gross_mortality_rate = df_temp["TBMOR2018"],
-                    # TASA DE CRECIMIENTO VEGETATIVO
-                    vegetative_growth =  df_temp["TCVEG2018"],
-                    # SALDO VEGETATIVO
-                    vegetative_balance = df_temp["SVEG2018"],
-                    # ALTAS TOTALES
-                    altas_totales = df_temp["ALTASTT2018"],
-                    # ALTAS INTERIORES
-                    altas_interiores = df_temp["ALTASINT2018"],
-                    # ALTAS EXTERIORES
-                    altas_exteriores = df_temp["ALTASEXT2018"],
-                    # BAJAS TOTALES
-                    bajas_totales = df_temp["BAJASTT2018"],
-                    # BAJAS INTERIORES
-                    bajas_interiores = df_temp["BAJASINT2018"],
-                    # BAJAS EXTERIORES
-                    bajas_exteriores = df_temp["BAJASEXT2018"],
-                    # SALDO MIGRATORIO TOTAL
-                    saldo_migratorio_total = df_temp["SALDOTT2018"],
-                    # SALDO MIGRATORIO INTERNO
-                    saldo_migratorio_interno = df_temp["SALDOINT2018"],
-                    # SALDO MIGRATORIO EXTERNO
-                    saldo_migratorio_externo = df_temp["SALDOEXT2018"])
+                    # rest of arguments
+                    **d_args)
                                               
             # Add specific population to the universe
             population_centres.append(the_population)
             
-        return population_centres    
+        return  [population_centres, my_cols_update]
     
     
     def LargeCityBuilder(self):
@@ -146,6 +132,7 @@ class Universe():
     def update(self):
         global agent_idx
         # Consider each population centre
+        self.year = str(int(self.year) + 1)
         for population in self.population_centres:
             
             ### PEOPLE WHO LEAVE THE POPULATION CENTRE ###
@@ -173,10 +160,15 @@ class Universe():
             
             ## SALDO MIGRATORIO (?):
             ## THOSE WHO ARE UNHAPPY ARE GOING TO LEAVE
+            #### ¿Y si no hay tantan gente infeliz como gente que se tiene que ir?
+            ### Solo hay male ya que los he metido primero en la lista
+            ### shuffe of inhabitants list ??????
             if population.saldo_migratorio_total < 0:
                 saldo = 0
                 # Consider each inhabitant
                 for person in population.inhabitants:
+                    ### THE MOST UNHAPPUY PEOPLEMUST LEAVE !
+                    
                     # Is the person unhappy? If so -> remove
                     # But, where is the person going?
                     # (BY NOW) I ASSUME THE PERSON GOES TO A LARGE CITY
@@ -186,9 +178,10 @@ class Universe():
                         #self.remove_person_from_universe(person)
                         saldo -= 1
                         person.population_centre = random.choice(self.large_cities)
-                        person.add_agent(new = False)
+                        person.add_agent()
                     if saldo == population.saldo_migratorio_total:
                         break
+                
         
             ### PEOPLE WHO ARRIVE IN THE POPULATION CENTRE ### 
             
@@ -216,7 +209,8 @@ class Universe():
                 while new_guys < population.saldo_migratorio_total:
                     agent_idx = agent_idx + 1
                     # random.choice(["M", "F"]) same as the dice
-                    the_agent = Agents(agent_idx, random.choice(["M", "F"]),
+                    the_agent = Agents(agent_idx,
+                                       random.choice(["M", "F"]),
                                        random.randrange(18, 101),
                                        population)
                     self.add_person_to_universe(the_agent)
@@ -224,8 +218,19 @@ class Universe():
                     new_guys += 1
             
             ### UPDATE AGES ###
-            #for person in self.universe_persons:
-            #    person.age += 1
+            for person in self.universe_persons:
+                person.age += 1
+                
+            ### UODATE MORTALITY, NATALITY, .... ###
+            d_args_update = {}
+            for column in self.cols_update:
+                d_args_update[column.lower()] = self.main_dataframe.query('CODMUN == ' + str(population.population_id))[column+self.year]
+            population.uppdate_population(**d_args_update)
+                
+            
+            
+            
+            
                                 
 
             
@@ -240,22 +245,33 @@ class Universe():
         
     def Print(self):
         print('###################################################')
-        print('#        POPULATION CENTRES IN THE UNIVERSE       #')
+        print('#    POPULATION CENTRES IN THE UNIVERSE. ' + self.year +'     #')
         print('###################################################')
         print("Universe population: %s persons" % len(self.universe_persons))
         print("\n")
         for elem in self.population_centres:
             elem.Print()
-            #for person in elem.inhabitants:
-                #person.Print()
         for elem in self.large_cities:
             elem.Print()
             
 
 if __name__ == "__main__":
+    # Toy dataframe, Just able to perform 3 updates
     my_df = pd.read_csv("data.csv")
-    my_universe = Universe(my_df)
+    
+    year = 2018
+    
+    my_universe = Universe(my_df, year)
     my_universe.Print()
-    time.sleep(10)
+    time.sleep(5)
+    
     my_universe.update()
     my_universe.Print()
+    time.sleep(5)
+    
+    my_universe.update()
+    my_universe.Print()
+    time.sleep(5)
+    
+    
+    

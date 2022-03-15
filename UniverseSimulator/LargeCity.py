@@ -24,9 +24,9 @@ class LargeCity():
         print('---------------------------------------------------')
         print("LARGE CITY: %s. Code: %s." 
               % (self.population_name, self.population_id))
-        print("Total inhabitants: %s." % (self.num_men + self.num_women))
-        print("Male inhabitants : %s."% self.num_men)
-        print("Women inhabitants: %s." % self.num_women)
+        print("Total inhabitants : %s." % (self.num_men + self.num_women))
+        print("Male  inhabitants : %s."% self.num_men)
+        print("Women inhabitants : %s." % self.num_women)
         print("\n")
 
         
