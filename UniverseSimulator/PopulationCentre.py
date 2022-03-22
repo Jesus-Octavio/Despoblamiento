@@ -6,6 +6,13 @@ Created on Fri Mar 11 14:01:22 2022
 @author: jesus
 """
 
+import plotly.express as px
+import plotly.graph_objects as go
+import plotly.subplots as sp
+import pandas as pd
+import numpy as np
+
+
 class PopulationCentre():
     # POPULATION CENTRES CONSTRUCTOE
     
@@ -27,10 +34,71 @@ class PopulationCentre():
         self.inhabitants = []
         #self.inhabitant = inhabitants
         
-    def uppdate_population(self, nat, mor, saldott):
+        ## FOR FUTURE PLOTS
+        self.natality_hist  = []
+        self.mortality_hist = []
+        self.men_hist       = []
+        self.women_hist     = []
+        self.saldo_hist     = []
+        self.year_hist      = []
+        
+        
+        
+    def update_population(self, nat, mor, saldott):
         self.natality = int(nat)
         self.mortality = int(mor)
         self.saldo_migratorio_total = int(saldott)
+        
+    def update_hist(self):
+        self.natality_hist.append(int(self.natality))
+        self.mortality_hist.append(int(self.mortality))
+        self.men_hist.append(int(self.num_men))
+        self.women_hist.append(int(self.num_women))
+        self.saldo_hist.append(int(self.saldo_migratorio_total))
+        self.year_hist.append(int(self.year))
+        
+    def plot_hist(self):
+        data  = {"NAT" : self.natality_hist,
+                 "MOR" : self.mortality_hist,
+                 "HOM" : self.men_hist,
+                 "MUJ" : self.women_hist,
+                 "SALDOMIG" : self.saldo_hist,
+                 "YEAR" : self.year_hist}
+        
+        df = pd.DataFrame.from_dict(data)
+        
+        fig = go.Figure()
+        
+        fig.add_trace(go.Scatter(x = df["YEAR"], y = np.log(df["HOM"]),
+                      mode = "lines",
+                      name = "Hombres"))
+        
+        fig.add_trace(go.Scatter(x = df["YEAR"], y = np.log(df["MUJ"]),
+                      mode = "lines",
+                      name = "Mujeres"))
+        
+        fig.add_trace(go.Scatter(x = df["YEAR"], y = np.log(df["NAT"]),
+                      mode = "lines",
+                      name = "Natalidad"))
+        
+        fig.add_trace(go.Scatter(x = df["YEAR"], y = np.log(df["MOR"]),
+                      mode = "lines",
+                      name = "Mortalidad"))
+        
+        # SALDO MIGRATORIO NEGATIVO -> ERROR !!!
+        #fig.add_trace(go.Scatter(x = df["YEAR"], y = np.log(df["SALDOMIG"]),
+        #              mode = "lines",
+        #              name = "Saldo migratorio"))
+        
+        fig.update_layout(title = "Evolución de variables en %s" % self.population_name,
+                    xaxis_title = "Añ0",
+                    yaxis_title = "Total personas (log-scale)")
+  
+        
+        #fig.show()
+        return fig
+        
+        
         
         
     def Print(self):

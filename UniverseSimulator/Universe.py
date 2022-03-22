@@ -81,9 +81,13 @@ class Universe():
                     num_women = 0,
                     # rest of arguments
                     **d_args)
-                                              
+
+            
             # Add specific population to the universe
             population_centres.append(the_population)
+            
+            
+            
             
         return  [population_centres, my_cols_update]
     
@@ -97,7 +101,7 @@ class Universe():
     def AgentsBuilder(self):
         # METHOD TO BUILD UP PERSONS (AGENTS) 
         # JUST TO INITIALIZE OUR MODEL !!
-        global agent_idx # I want this variable to be global
+        global agent_idx # I want this variable to be global ## gloabal en universo?
         # Empty list to store agents
         agents = []
         # Identifier for agents
@@ -126,14 +130,21 @@ class Universe():
                 the_agent.add_agent()                   
                 agents.append(the_agent)
                 agent_idx += 1
+                
+               
+            # Update historial
+            population.update_hist()
         return agents
                 
                 
     def update(self):
         global agent_idx
-        # Consider each population centre
+        # Update year for Universe
         self.year = str(int(self.year) + 1)
+        # Consider each population centre
         for population in self.population_centres:
+            # Update year for the population centre
+            population.year = int(population.year) + 1
             
             ### PEOPLE WHO LEAVE THE POPULATION CENTRE ###
             
@@ -162,7 +173,7 @@ class Universe():
             ## THOSE WHO ARE UNHAPPY ARE GOING TO LEAVE
             #### ¿Y si no hay tantan gente infeliz como gente que se tiene que ir?
             ### Solo hay male ya que los he metido primero en la lista
-            ### shuffe of inhabitants list ??????
+            ### shuffle of inhabitants list ??????
             if population.saldo_migratorio_total < 0:
                 saldo = 0
                 # Consider each inhabitant
@@ -202,6 +213,7 @@ class Universe():
                 new_borns += 1
                 
             ## SALDO MIGRATORIO
+            #### ELIMINAR ESTA PARTE 
             ## New guys on the town ! Where are they coming from? 
             ## Dont know, just create new people
             if population.saldo_migratorio_total > 0:
@@ -221,19 +233,17 @@ class Universe():
             for person in self.universe_persons:
                 person.age += 1
                 
-            ### UODATE MORTALITY, NATALITY, .... ###
+            ### UPDATE MORTALITY, NATALITY, .... ###
             d_args_update = {}
             for column in self.cols_update:
                 d_args_update[column.lower()] = self.main_dataframe.query('CODMUN == ' + str(population.population_id))[column+self.year]
-            population.uppdate_population(**d_args_update)
+            
+            population.update_population(**d_args_update)            
+            
+            population.update_hist()
                 
             
-            
-            
-            
-                                
-
-            
+                        
     def remove_person_from_universe(self, agent):
         # METHOD TO REMOVE PEOPLE FROM UNIVERSE (those who die mainly)
         # Remove from the universe
@@ -249,29 +259,33 @@ class Universe():
         print('###################################################')
         print("Universe population: %s persons" % len(self.universe_persons))
         print("\n")
-        for elem in self.population_centres:
-            elem.Print()
-        for elem in self.large_cities:
-            elem.Print()
+        for population in self.population_centres:
+            population.Print()
+        for city in self.large_cities:
+            city.Print()
             
+    def Plot(self):
+        for population in self.population_centres:
+            population.plot_hist().show()
+
+                    
 
 if __name__ == "__main__":
     # Toy dataframe, Just able to perform 3 updates
-    my_df = pd.read_csv("data.csv")
+    my_df = pd.read_csv("data_aumentada.csv")
+    my_df = my_df[my_df["CODMUN"].isin([39075])]
     
-    year = 2018
+    year = 2012
     
+
     my_universe = Universe(my_df, year)
     my_universe.Print()
-    time.sleep(5)
+        #time.sleep(5)
+    for i in range(1,8):
+        my_universe.update()
+        my_universe.Print()
+        #time.sleep(5)
     
-    my_universe.update()
-    my_universe.Print()
-    time.sleep(5)
-    
-    my_universe.update()
-    my_universe.Print()
-    time.sleep(5)
-    
+    my_universe.Plot()
     
     
