@@ -6,10 +6,39 @@ Created on Fri Mar 11 09:43:03 2022
 @author: jesus
 """
 import pandas as pd
+import numpy as np
 from PopulationCentre import PopulationCentre
 from LargeCity import LargeCity
 from Agents import Agents
-import random, time, math
+import random, time, math, sys
+import plotly.express as px
+import plotly.graph_objects as go
+import plotly.subplots as sp
+from plotly.subplots import make_subplots
+
+def myround(x, base=5):     
+    """
+    Auxiliary function. Given an age, returns its range according to
+    the discretization in the read data
+        
+    Examples
+    ------
+    >>> myround(1)
+    0-4        
+    >>> myround(23)
+    20-24        
+    >>> myround(106)
+    >100
+    """
+    init = base * math.floor(float(x) / base)    
+    if init >= 100:
+        return '>' + str(100)     
+    end =  base * math.ceil(float(x) / base)
+    if init == end:
+        end = end + 5
+    return str(init) + '-' + str(end - 1)
+
+
         
 
 class Universe():
@@ -82,13 +111,9 @@ class Universe():
                     # rest of arguments
                     **d_args)
 
-            
             # Add specific population to the universe
             population_centres.append(the_population)
-            
-            
-            
-            
+        
         return  [population_centres, my_cols_update]
     
     
@@ -97,7 +122,10 @@ class Universe():
         city_2 = LargeCity("CITY2", "Barcelona",  0, 0, {})
         return [city_1, city_2]
 
-    
+    """     
+    PARA INICIALIZAR SI NO TENEMOS DATOS DESGLOSADOS SEGÚN FRANJAS
+    DE EDAD:
+       
     def AgentsBuilder(self):
         # METHOD TO BUILD UP PERSONS (AGENTS) 
         # JUST TO INITIALIZE OUR MODEL !!
@@ -135,16 +163,68 @@ class Universe():
             # Update historial
             population.update_hist()
         return agents
-                
-                
+    
+    """
+    
+    def AgentsBuilder(self):
+        global agent_idx
+        agents = []
+        age_cols = [col for col in self.main_dataframe.columns if col.startswith('Edad_')]
+        #age_cols = self.main_dataframe.filter(regex = r'^Edad_.*?$', axis = 1)
+        #male_cols =  self.main_dataframe.filter(regex = r'^Edad_M.*?$', axis = 1)
+        #female_ cols = self.main_dataframe.filter(regex = r'^Edad_F.*?$', axis = 1)
+        for population in self.population_centres:
+            # Dictionary for age ranges
+            age_range = {self.year + "M" : {}, self.year + "F" : {}}
+            # SElect subdataframe
+            df_temp = self.main_dataframe.\
+                query('CODMUN == ' + str(population.population_id))[age_cols]
+            for col in df_temp.columns:
+                sex = col.split(":")[0][-1]
+                if "-" in col:
+                    init = int(col.split(":")[1].split("-")[0])
+                    end = int(col.split(":")[1].split("-")[1])
+                    key = str(init) + '-' + str(end)
+                else:
+                    init = int(col.split(":")[1].split(">")[1])
+                    end = 110
+                    key = ">" + str(init)
+                    
+                # Update distionay for age ranges
+                if key not in age_range[self.year + sex].keys():
+                    age_range[self.year + sex].update({key : int(df_temp[col])})
+                else: 
+                    age_range[self.year + sex][key] += int(df_temp[col])
+                        
+                for i in range(int(df_temp[col])):
+                    # Create agent
+                    the_agent = Agents(identifier = agent_idx,
+                                   sex = sex,
+                                   age = random.randint(init, end),
+                                   population_centre = population)
+                    # Add agent to population centre
+                    the_agent.add_agent()
+                    # Add agent to global list
+                    agents.append(the_agent)
+                    # Update identifier
+                    agent_idx += 1
+            
+            # Update dictionary with age ranges and historial
+            population.ages_hist = age_range
+            population.update_hist()
+        return agents
+            
+                    
     def update(self):
         global agent_idx
         # Update year for Universe
         self.year = str(int(self.year) + 1)
         # Consider each population centre
         for population in self.population_centres:
-            # Update year for the population centre
-            population.year = int(population.year) + 1
+            # Intialize dictoinary with age ranges to previous year
+            population.ages_hist[self.year + "M"] = population.ages_hist[str(int(self.year) - 1) + "M"].copy()
+            population.ages_hist[self.year + "F"] = population.ages_hist[str(int(self.year) - 1) + "F"].copy()
+
             
             ### PEOPLE WHO LEAVE THE POPULATION CENTRE ###
             
@@ -159,12 +239,20 @@ class Universe():
                     if person.age > max_age:
                         max_age = person.age
                         person_to_die = person
+                # Update dictionary with ages by range:
+                interval = myround(person_to_die.age)
+                population.ages_hist[self.year + person_to_die.sex][interval] -= 1
+                # Remove person
                 person_to_die.remove_agent()
                 self.remove_person_from_universe(person_to_die)
                 deaths += 1
             # and some random people
             while deaths <= population.mortality:
                 person_to_die = random.choice(population.inhabitants)
+                # Update dictionary with ages by range:
+                interval = myround(person_to_die.age)
+                population.ages_hist[self.year + person_to_die.sex][interval] -= 1
+                # Remove person
                 person_to_die.remove_agent()
                 self.remove_person_from_universe(person_to_die)
                 deaths += 1
@@ -185,10 +273,15 @@ class Universe():
                     # (BY NOW) I ASSUME THE PERSON GOES TO A LARGE CITY
                     b = person.migrate()
                     if b:
-                        # I could assumethey leave the universe but not
-                        #self.remove_person_from_universe(person)
+                        # I could assume they leave the universe but not
+                        #  self.remove_person_from_universe(person)
                         saldo -= 1
                         person.population_centre = random.choice(self.large_cities)
+                
+                        # Update dictionary with ages by range:
+                        interval = myround(person.age)
+                        population.ages_hist[self.year + person.sex][interval] -= 1
+                
                         person.add_agent()
                     if saldo == population.saldo_migratorio_total:
                         break
@@ -196,22 +289,6 @@ class Universe():
         
             ### PEOPLE WHO ARRIVE IN THE POPULATION CENTRE ### 
             
-            ## THOSE WHO ARE NEWBORN BABIES
-            # Natality: new people with age 0 ¿Male or Female?
-            new_borns = 0
-            while new_borns <= population.natality:
-                dice =  random.random()
-                agent_idx = agent_idx + 1
-                if dice < 0.5:
-                    the_agent = Agents(agent_idx, "M", 0, population)
-                else:
-                    the_agent = Agents(agent_idx, "F", 0, population)
-                ## Add agent to the universe
-                self.add_person_to_universe(the_agent)
-                # Add agent to population centre
-                the_agent.add_agent()
-                new_borns += 1
-                
             ## SALDO MIGRATORIO
             #### ELIMINAR ESTA PARTE 
             ## New guys on the town ! Where are they coming from? 
@@ -228,30 +305,183 @@ class Universe():
                     self.add_person_to_universe(the_agent)
                     the_agent.add_agent()
                     new_guys += 1
+                    # Update dictionary with ages by range:
+                    interval = myround(the_agent.age)
+                    population.ages_hist[self.year + the_agent.sex][interval] += 1
             
             ### UPDATE AGES ###
+            # HAY QUE ACTUALIZAR EN EL MOMENTO ADECUADO. RECIEN NACIDOS CON 1 AÑO !?
             for person in self.universe_persons:
                 person.age += 1
+            
+            ## THOSE WHO ARE NEWBORN BABIES
+            # Natality: new people with age 0 ¿Male or Female?
+            new_borns = 0
+            while new_borns <= population.natality:
+                dice =  random.random()
+                agent_idx = agent_idx + 1
+                if dice < 0.5:
+                    the_agent = Agents(agent_idx, "M", 0, population)
+                else:
+                    the_agent = Agents(agent_idx, "F", 0, population)
+                ## Add agent to the universe
+                self.add_person_to_universe(the_agent)
+                # Add agent to population centre
+                the_agent.add_agent()
+                # Update dictionary with ages by range:
+                interval = myround(the_agent.age)
+                population.ages_hist[self.year + the_agent.sex][interval] += 1
+                new_borns += 1
+                
                 
             ### UPDATE MORTALITY, NATALITY, .... ###
             d_args_update = {}
             for column in self.cols_update:
-                d_args_update[column.lower()] = self.main_dataframe.query('CODMUN == ' + str(population.population_id))[column+self.year]
+                d_args_update[column.lower()] = self.main_dataframe.\
+                    query('CODMUN == ' + str(population.population_id))[column+self.year]
             
             population.update_population(**d_args_update)            
-            
             population.update_hist()
-                
             
-                        
+            # Update year for the population centre
+            population.year = int(population.year) + 1
+            
+               
     def remove_person_from_universe(self, agent):
         # METHOD TO REMOVE PEOPLE FROM UNIVERSE (those who die mainly)
         # Remove from the universe
         self.universe_persons.remove(agent)
         
+        
     def add_person_to_universe(self, agent):
         # METHOD TO ADD PEOPLE TO THE UNIVERSE (newborn babies mainly)
         self.universe_persons.append(agent)    
+        
+        
+    def plot_population_hist(self):
+        # METHOD FOR PLOTTING POPULATION HISTORIAL IN A
+        # SPECIFIED POPULATION CENTRE.
+
+        population_code = int(input("Please, enter a population code: "))
+        
+        my_population = False
+        for population in self.population_centres:
+            if population.population_id == population_code:
+                my_population = population
+        
+        if my_population == False:
+            raise Exception("Population centre not found")
+        
+        
+        data  = {"NAT" : my_population.natality_hist,
+                 "MOR" : my_population.mortality_hist,
+                 "HOM" : my_population.men_hist,
+                 "MUJ" : my_population.women_hist,
+                  #"SALDOMIG" : my_population.saldo_hist,
+                 "YEAR" : my_population.year_hist}
+        
+        df = pd.DataFrame.from_dict(data)
+        
+        fig = go.Figure()
+        
+        fig.add_trace(go.Scatter(x = df["YEAR"], y = np.log(df["HOM"]),
+                      mode = "lines",
+                      name = "Hombres"))
+        
+        fig.add_trace(go.Scatter(x = df["YEAR"], y = np.log(df["MUJ"]),
+                      mode = "lines",
+                      name = "Mujeres"))
+        
+        fig.add_trace(go.Scatter(x = df["YEAR"], y = np.log(df["NAT"]),
+                      mode = "lines",
+                      name = "Natalidad"))
+        
+        fig.add_trace(go.Scatter(x = df["YEAR"], y = np.log(df["MOR"]),
+                      mode = "lines",
+                      name = "Mortalidad"))
+        
+        # SALDO MIGRATORIO NEGATIVO -> ERROR !!!
+        #fig.add_trace(go.Scatter(x = df["YEAR"], y = np.log(df["SALDOMIG"]),
+        #              mode = "lines",
+        #              name = "Saldo migratorio"))
+        
+        fig.update_layout(title = "Evolución de variables en %s" % my_population.population_name,
+                    xaxis_title = "Año",
+                    yaxis_title = "Total personas (log-scale)")
+  
+        
+        fig.show()
+        
+    def plot_population_pyramid(self):
+        # METHOD FOR PLOTTING POPULATION HISTORIAL IN A
+        # SPECIFIED POPULATION CENTRE. ALDO PLOTS POPULATIUON PYRAMID
+
+        population_code = int(input("Please, enter a population code: "))
+        
+        my_population = False
+        for population in self.population_centres:
+            if population.population_id == population_code:
+                my_population = population
+        
+        if my_population == False:
+            raise Exception("Population centre not found")
+        
+        
+        df = pd.DataFrame.from_dict(my_population.ages_hist)
+        
+        
+        fig = make_subplots(rows = int(len(df.columns) / 2), cols = 1,
+                 subplot_titles = np.unique([x[:-1] for x in df.columns]))
+        
+        
+        # Function 2Z -> Z ... i guess not
+        row = 1
+        for i in range(0, len(df.columns), 2):
+                       
+            if i == 0:
+                show = True
+            else:
+                show = False
+        
+            fig2 = go.Figure()
+
+            fig.add_trace(go.Bar(
+                          y = df.index.values.tolist(),
+                          x = df.iloc[:, i],
+                          name  = "Hombres",
+                          marker_color = "blue",
+                          orientation = "h",
+                          showlegend = show),
+                          row = row, col = 1)
+            
+            fig.add_trace(go.Bar(
+                          y = df.index.values.tolist(),
+                          x = - df.iloc[:, i + 1],
+                          name  = "Mujeres",
+                          marker_color = "orange",
+                          orientation = "h",
+                          showlegend = show),
+                          row = row, col = 1)
+            
+            fig.update_layout(barmode = 'relative',
+                               bargap = 0.0, bargroupgap = 0)
+            fig.update_xaxes(tickangle=90)
+
+
+            #for t in fig2.data:
+             #   fig.append_trace(t , row = row, col = 1)
+                
+            row += 1
+            
+        
+        fig.update_layout(
+                    title_text="Evolución de la pirámide poblacional en %s" 
+                        % my_population.population_name,
+                    bargap = 0.0, bargroupgap = 0,)
+        fig.show()
+        
+        
+        
         
     def Print(self):
         print('###################################################')
@@ -271,21 +501,20 @@ class Universe():
                     
 
 if __name__ == "__main__":
-    # Toy dataframe, Just able to perform 3 updates
-    my_df = pd.read_csv("data_aumentada.csv")
-    my_df = my_df[my_df["CODMUN"].isin([39075])]
+    # Toy dataframe
+    my_df = pd.read_csv("data_aumentada_years.csv")
+    my_df = my_df[my_df["CODMUN"].isin([39085])]
+    #my_df = my_df[my_df["CODMUN"]]
     
     year = 2012
     
-
     my_universe = Universe(my_df, year)
     my_universe.Print()
-        #time.sleep(5)
-    for i in range(1,8):
+    for i in range(1,2):
         my_universe.update()
         my_universe.Print()
-        #time.sleep(5)
+        
     
-    my_universe.Plot()
+    my_universe.plot_population_pyramid()
     
     

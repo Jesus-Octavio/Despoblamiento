@@ -34,7 +34,10 @@ class PopulationCentre():
         self.inhabitants = []
         #self.inhabitant = inhabitants
         
-        ## FOR FUTURE PLOTS
+        # Mean happiness for inhabitants
+        self.mean_happiness = self.update_mean_happiness()
+        
+        ## PLOT. MULILINE CHART: POPULATION DYNAMICS
         self.natality_hist  = []
         self.mortality_hist = []
         self.men_hist       = []
@@ -42,6 +45,8 @@ class PopulationCentre():
         self.saldo_hist     = []
         self.year_hist      = []
         
+        ## PLOT. POPULATION PYRAMID
+        self.ages_hist = {}
         
         
     def update_population(self, nat, mor, saldott):
@@ -56,7 +61,24 @@ class PopulationCentre():
         self.women_hist.append(int(self.num_women))
         self.saldo_hist.append(int(self.saldo_migratorio_total))
         self.year_hist.append(int(self.year))
+    
+    def update_mean_happiness(self):
+        """
+        Method to compute mean happiness for the population centre.
+        The mean happiness for a population centre is the result 
+        of averaging inhabitants's happiness
+        """
+        mean_happiness = 0
+        # Both must be the same !!! Are they? 
+        # Problemns with initialization by ages
+        num_inhabitants = self.num_men + self.num_women
+        #num_inhabitants_2 = len(self.inhabitants)
+        for agent in self.inhabitants:
+            mean_happiness = mean_happiness + (agent.happiness  / num_inhabitants)
+        return mean_happiness
         
+        
+    """
     def plot_hist(self):
         data  = {"NAT" : self.natality_hist,
                  "MOR" : self.mortality_hist,
@@ -97,6 +119,7 @@ class PopulationCentre():
         
         #fig.show()
         return fig
+        """
         
         
         
@@ -109,6 +132,7 @@ class PopulationCentre():
         print("Total inhabitants : %s." % (self.num_men + self.num_women))
         print("Male  inhabitants : %s." % self.num_men)
         print("Women inhabitants : %s." % self.num_women)
+        #print("HIATORIAS : %s." % self.ages_hist)
         
         print("\n")
         
