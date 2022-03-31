@@ -44,6 +44,7 @@ class SeaofBTCapp(Pages, tk.Tk):
         container.grid_rowconfigure(0, weight=1)
         container.grid_columnconfigure(0, weight=1)
 
+        self.universe = universe
         self.frames = {}
 
         for F in (StartPage, PageOne, PopulationCentrePage, PlotPage, temp):
@@ -144,35 +145,45 @@ class PopulationCentrePage(Pages, tk.Frame,):
         var = tk.StringVar()
 
         def selection():
-            countries = []
+            towns_names = []
             cname = lb.curselection()
             for i in cname:
                 op = lb.get(i)
-                countries.append(op)
-            return countries
+                towns_names.append(op)
+            
+            towns_object = []
+            for town in towns_names:
+                for population in controller.universe.population_centres:
+                    if town == population.population_name:
+                        towns_object.append(population)
+                        
+                
+            
+            return [towns_names, towns_object]
         
         
         def showSelected():
-            countries = selection()
-            for val in countries:
-                print(val)
+            towns = selection()
+            for item in towns:
+                print(item)
             
             
         show = tk.Label(self, text = "SELECCIONE UN MUNICIPIO", font = ("Times", 14), padx = 10, pady = 10)
         show.pack() 
         lb = tk.Listbox(self, selectmode = "multiple")
         lb.pack(padx = 10, pady = 10, fill = "both") 
-
-        x =["Tomelloso", "Alcazar de San Juan", "Campo de Criptana"]
-
-        for item in range(len(x)): 
-            lb.insert("end", x[item]) 
+        
+        
+        
+        
+        for item in range(len(controller.universe.population_centres)): 
+            lb.insert("end", controller.universe.population_centres[item].population_name) 
             lb.itemconfig(item, bg="#bdc1d6") 
 
         tk.Button(self, text = "CONFIRMAR CONSULTA", command=showSelected).pack()
         
         tk.Button(self, text = "SIGUIENTE",
-                  command= lambda : controller.show_frame_set_population(PlotPage, name = selection()[0], _id = "2")).pack()
+                  command= lambda : controller.show_frame_set_population(PlotPage, name = selection()[0][0], _id = str(selection()[1][0].population_id))).pack()
     
 
     
