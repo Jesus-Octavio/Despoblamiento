@@ -7,9 +7,24 @@ Created on Fri Mar 11 09:43:03 2022
 """
 import pandas as pd
 import numpy as np
+
 from PopulationCentre import PopulationCentre
 from LargeCity import LargeCity
 from Agents import Agents
+
+"""
+from SeaofBTCapp import SeaofBTCapp
+from SeaofBTCapp import StartPage
+from SeaofBTCapp import PageOne
+from SeaofBTCapp import PopulationCentrePage
+from SeaofBTCapp import PlotPage
+from SeaofBTCapp import temp
+"""
+
+
+
+
+
 import random, time, math, sys
 import plotly.express as px
 import plotly.graph_objects as go
@@ -443,7 +458,6 @@ class Universe():
             else:
                 show = False
         
-            fig2 = go.Figure()
 
             fig.add_trace(go.Bar(
                           y = df.index.values.tolist(),
@@ -498,12 +512,12 @@ class Universe():
         for population in self.population_centres:
             population.plot_hist().show()
 
-                    
+"""
 
 if __name__ == "__main__":
     # Toy dataframe
     my_df = pd.read_csv("data_aumentada_years.csv")
-    my_df = my_df[my_df["CODMUN"].isin([39085])]
+    my_df = my_df[my_df["CODMUN"].isin([39085, 39035])]
     #my_df = my_df[my_df["CODMUN"]]
     
     year = 2012
@@ -515,6 +529,8 @@ if __name__ == "__main__":
         my_universe.Print()
         
     
-    my_universe.plot_population_pyramid()
+    #my_universe.plot_population_pyramid()
+    app = SeaofBTCapp()
+    app.mainloop()
     
-    
+""" 
