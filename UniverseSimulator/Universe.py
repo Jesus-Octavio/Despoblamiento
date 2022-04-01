@@ -30,6 +30,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 import plotly.subplots as sp
 from plotly.subplots import make_subplots
+import plotly.offline as py
 
 def myround(x, base=5):     
     """
@@ -296,8 +297,8 @@ class Universe():
                         # Update dictionary with ages by range:
                         interval = myround(person.age)
                         population.ages_hist[self.year + person.sex][interval] -= 1
-                
                         person.add_agent()
+                        
                     if saldo == population.saldo_migratorio_total:
                         break
                 
@@ -357,6 +358,9 @@ class Universe():
             
             population.update_population(**d_args_update)            
             population.update_hist()
+            print(population.ages_hist)
+            print("\n")
+
             
             # Update year for the population centre
             population.year = int(population.year) + 1
@@ -373,11 +377,11 @@ class Universe():
         self.universe_persons.append(agent)    
         
         
-    def plot_population_hist(self):
+    def plot_population_hist(self, population_code):
         # METHOD FOR PLOTTING POPULATION HISTORIAL IN A
         # SPECIFIED POPULATION CENTRE.
 
-        population_code = int(input("Please, enter a population code: "))
+        #population_code = int(input("Please, enter a population code: "))
         
         my_population = False
         for population in self.population_centres:
@@ -425,13 +429,14 @@ class Universe():
                     yaxis_title = "Total personas (log-scale)")
   
         
-        fig.show()
+        #fig.show()
+        return fig
         
-    def plot_population_pyramid(self):
+    def plot_population_pyramid(self, population_code):
         # METHOD FOR PLOTTING POPULATION HISTORIAL IN A
         # SPECIFIED POPULATION CENTRE. ALDO PLOTS POPULATIUON PYRAMID
 
-        population_code = int(input("Please, enter a population code: "))
+        #population_code = int(input("Please, enter a population code: "))
         
         my_population = False
         for population in self.population_centres:
@@ -452,7 +457,6 @@ class Universe():
         # Function 2Z -> Z ... i guess not
         row = 1
         for i in range(0, len(df.columns), 2):
-                       
             if i == 0:
                 show = True
             else:
@@ -492,9 +496,8 @@ class Universe():
                     title_text="Evolución de la pirámide poblacional en %s" 
                         % my_population.population_name,
                     bargap = 0.0, bargroupgap = 0,)
-        fig.show()
-        
-        
+        #fig.show()
+        return fig
         
         
     def Print(self):

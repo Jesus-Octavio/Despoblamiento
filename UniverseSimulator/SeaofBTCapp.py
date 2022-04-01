@@ -22,6 +22,15 @@ from Agents import Agents
 
 import pandas as pd
 import numpy as np
+  
+          
+import numpy as np
+from matplotlib.figure import Figure
+import matplotlib.pyplot as plt
+from  matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
+
+import plotly.offline as py
+import sys
 
 
 LARGE_FONT= ("Verdana", 12)
@@ -47,7 +56,7 @@ class SeaofBTCapp(Pages, tk.Tk):
         self.universe = universe
         self.frames = {}
 
-        for F in (StartPage, PageOne, PopulationCentrePage, PlotPage, temp):
+        for F in (StartPage, PageOne, PopulationCentrePage, PlotPage):
 
             frame = F(container, self)
 
@@ -73,8 +82,6 @@ class SeaofBTCapp(Pages, tk.Tk):
         Pages._id = _id
         
         
-        
-        
 
 class StartPage(tk.Frame):
 
@@ -85,14 +92,15 @@ class StartPage(tk.Frame):
         tk.Frame.__init__(self,parent)
         
         welcome_pic = ImageTk.PhotoImage(Image.open("/home/jesus/Escritorio/welcome.jpg"))
-        welcome_pic_label = tk.Label(self, image=welcome_pic)
+        tk.Label(self,
+                 image = welcome_pic).pack()
         
         self.configure(background='black')
         
-        button = tk.Button(self, text = "ENTER", command=lambda: controller.show_frame(PageOne))
+        tk.Button(self,
+                  text = "ENTER",
+                  command = lambda: controller.show_frame(PageOne)).pack()
         
-        welcome_pic_label.pack()
-        button.pack()
         
 class PageOne(tk.Frame):
 
@@ -105,17 +113,21 @@ class PageOne(tk.Frame):
         #comein_pic = ImageTk.PhotoImage(Image.open("/home/jesus/Escritorio/come.jpg"))
         #comein_pic_label = tk.Label(self, image=comein_pic)
         
-        button0 = tk.Button(self, text = "ANTERIOR",
-                            command=lambda: controller.show_frame(StartPage))
         
-        button1 = tk.Button(self, text = "CONSULTA", 
-                            command=lambda: controller.show_frame(PopulationCentrePage))
+        tk.Button(self,
+                  text = "CONSULTA", 
+                  command = lambda: controller.show_frame(PopulationCentrePage)).pack()
+        
+        tk.Button(self,
+                  text = "ATRÁS",
+                  command = lambda: controller.show_frame(StartPage)).pack()
+        
         
         #button2 = tk.Button(self, text='BACK', command=lambda: controller.show_frame(StartPage))
         
         #comein_pic_label.pack()
-        button0.pack()
-        button1.pack()
+        #button0.pack()
+        #button1.pack()
         #button2.pack()
         
 """        
@@ -156,8 +168,6 @@ class PopulationCentrePage(Pages, tk.Frame,):
                 for population in controller.universe.population_centres:
                     if town == population.population_name:
                         towns_object.append(population)
-                        
-                
             
             return [towns_names, towns_object]
         
@@ -174,18 +184,24 @@ class PopulationCentrePage(Pages, tk.Frame,):
         lb.pack(padx = 10, pady = 10, fill = "both") 
         
         
-        
-        
         for item in range(len(controller.universe.population_centres)): 
             lb.insert("end", controller.universe.population_centres[item].population_name) 
             lb.itemconfig(item, bg="#bdc1d6") 
 
-        tk.Button(self, text = "CONFIRMAR CONSULTA", command=showSelected).pack()
+        tk.Button(self,
+                  text = "CONFIRMAR CONSULTA",
+                  command = showSelected).pack()
         
-        tk.Button(self, text = "SIGUIENTE",
+        tk.Button(self,
+                  text = "SIGUIENTE",
                   command= lambda : controller.show_frame_set_population(PlotPage, name = selection()[0][0], _id = str(selection()[1][0].population_id))).pack()
+        
+        tk.Button(self,
+                  text = "ATRÁS",
+                  command = lambda : controller.show_frame(PageOne)).pack()
     
 
+from tkinterweb import HtmlFrame
     
 
 class PlotPage(tk.Frame, Pages):
@@ -193,80 +209,69 @@ class PlotPage(tk.Frame, Pages):
     def __init__(self, parent, controller):
         
         
+        def button_1_plot():
+            fig = controller.universe.plot_population_hist(int(Pages._id))    
+            py.plot(fig, filename = "multiline.html", auto_open = True)
+            #frame = HtmlFrame(self)
+            #frame.pack(fill = "both", expand = True)
+            #frame.load_url(url = 'file:///home/jesus/Escritorio/Despoblamiento/UniverseSimulator/primer.html')
+            
+        def button_2_plot():
+            fig = controller.universe.plot_population_pyramid(int(Pages._id))    
+            py.plot(fig, filename = "piramide.html", auto_open = True)
+            #frame = HtmlFrame(self)
+            #frame.pack(fill = "both", expand = True)
+            #frame.load_url(url = 'file:///home/jesus/Escritorio/Despoblamiento/UniverseSimulator/primer.html')
+            
+        
         global comein_pic
         
         tk.Frame.__init__(self, parent)
         
-        button3 = tk.Button(self, text="CONSULTA ACUTAL", command=self.pp)
-        button3.pack()
+        tk.Button(self,
+                  text = "CONSULTA ACUTAL",
+                  command = self.confirm_query).pack()
+        #button3.pack()
         #button3.bind("<Button-1>", self.pp())
         
         
         self.label = tk.Label(self, text = "SELECCIONE TIPO DE GRÁFICO").pack()
         
-        button1 = tk.Button(self, text="GRÁFICO MULTILINEA: EVOLUCIÓN TEMPORAL",
-                            command = lambda: controller.show_frame(temp))
-        button1.pack()
+        tk.Button(self,
+                  text = "GRÁFICO MULTILINEA: EVOLUCIÓN TEMPORAL",
+                  command = button_1_plot).pack()
         
-        button2 = tk.Button(self, text="PIRÁMIDE POBLACIONAL: EVOLUCIÓN TEMPORAL",
-                            command = lambda: controller.show_frame(temp))
-        button2.pack()
+        tk.Button(self,
+                  text="PIRÁMIDE POBLACIONAL: EVOLUCIÓN TEMPORAL",
+                  command = button_2_plot).pack()
         
-    
-    def pp(self):
+        tk.Button(self,
+                  text = "ATRÁS",
+                  command = lambda: controller.show_frame(PopulationCentrePage)).pack()
+        
+        button_destroy = tk.Button(self,
+                                   text = "CERRAR",
+                                   command = lambda: controller.destroy())
+        button_destroy.pack(side = "bottom")
+        
+     
+    def confirm_query(self):
         text = str("HA ESCOGIDO EL MUNICIPIO %s CON CÓDIGO %s" % (Pages.name, Pages._id))
         self.label = tk.Label(self, text = text).pack()
-        
-          
-import numpy as np
-from matplotlib.figure import Figure
-import matplotlib.pyplot as plt
-from  matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
-import sys
-
-class temp(tk.Frame):
-
-    def __init__(self, parent, controller):
-        
-        def createWidgets():
-
-            t = np.arange(0, 3, .01)
-
-            f0 = tk.Frame()
-            
-            fig = plt.figure(figsize=(8, 8))
-        
-            fig.add_subplot(111).plot(t, 2 * np.sin(2 * np.pi * t))
-
-            canvas = FigureCanvasTkAgg(fig, f0)
-            toolbar = NavigationToolbar2Tk(canvas, f0)
-            toolbar.update()
-            canvas._tkcanvas.pack(fill=tk.BOTH, expand=1)
-        
-        
-            f0.pack(fill=tk.BOTH, expand=1)
-
-    
-        tk.Frame.__init__(self, parent)
-        #uper().__init__()
-        button1 = tk.Button(self, text="GRÁFICO MULTILINEA: EVOLUCIÓN TEMPORAL",
-                            command = createWidgets)
-        button1.pack()
-        
 
         
      
 if __name__ == "__main__":
     # Toy dataframe
     my_df = pd.read_csv("data_aumentada_years.csv")
-    my_df = my_df[my_df["CODMUN"].isin([39085, 39035])]
+    my_df = my_df[my_df["CODMUN"].isin([39085])]
     #my_df = my_df[my_df["CODMUN"]]
     
     year = 2012
     
     my_universe = Universe(my_df, year)
     my_universe.Print()
-    for i in range(1,2):
+    for i in range(1,4):
         my_universe.update()
         my_universe.Print()
         
