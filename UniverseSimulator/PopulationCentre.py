@@ -78,52 +78,6 @@ class PopulationCentre():
         return mean_happiness
         
         
-    """
-    def plot_hist(self):
-        data  = {"NAT" : self.natality_hist,
-                 "MOR" : self.mortality_hist,
-                 "HOM" : self.men_hist,
-                 "MUJ" : self.women_hist,
-                 "SALDOMIG" : self.saldo_hist,
-                 "YEAR" : self.year_hist}
-        
-        df = pd.DataFrame.from_dict(data)
-        
-        fig = go.Figure()
-        
-        fig.add_trace(go.Scatter(x = df["YEAR"], y = np.log(df["HOM"]),
-                      mode = "lines",
-                      name = "Hombres"))
-        
-        fig.add_trace(go.Scatter(x = df["YEAR"], y = np.log(df["MUJ"]),
-                      mode = "lines",
-                      name = "Mujeres"))
-        
-        fig.add_trace(go.Scatter(x = df["YEAR"], y = np.log(df["NAT"]),
-                      mode = "lines",
-                      name = "Natalidad"))
-        
-        fig.add_trace(go.Scatter(x = df["YEAR"], y = np.log(df["MOR"]),
-                      mode = "lines",
-                      name = "Mortalidad"))
-        
-        # SALDO MIGRATORIO NEGATIVO -> ERROR !!!
-        #fig.add_trace(go.Scatter(x = df["YEAR"], y = np.log(df["SALDOMIG"]),
-        #              mode = "lines",
-        #              name = "Saldo migratorio"))
-        
-        fig.update_layout(title = "Evolución de variables en %s" % self.population_name,
-                    xaxis_title = "Añ0",
-                    yaxis_title = "Total personas (log-scale)")
-  
-        
-        #fig.show()
-        return fig
-        """
-        
-        
-        
-        
     def Print(self):
         print('---------------------------------------------------')
         print('|           Population centre ' + str(self.population_id) +'               |')

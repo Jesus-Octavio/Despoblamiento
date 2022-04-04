@@ -227,6 +227,7 @@ class Universe():
             
             # Update dictionary with age ranges and historial
             population.ages_hist = age_range
+            #print(population.ages_hist)
             population.update_hist()
         return agents
             
@@ -240,6 +241,14 @@ class Universe():
             # Intialize dictoinary with age ranges to previous year
             population.ages_hist[self.year + "M"] = population.ages_hist[str(int(self.year) - 1) + "M"].copy()
             population.ages_hist[self.year + "F"] = population.ages_hist[str(int(self.year) - 1) + "F"].copy()
+            
+            print("INICIO ACTUALIZACION")
+            print("HOMBRES")
+            print(population.ages_hist[self.year + "M"])
+            print("\n")
+            print("MUJERES")
+            print(population.ages_hist[self.year + "F"])
+            print("\n")
 
             
             ### PEOPLE WHO LEAVE THE POPULATION CENTRE ###
@@ -247,6 +256,9 @@ class Universe():
             ## THOSE WHO DIE
             # Who is going to die?
             # I guess the oldest people (85% of total deaths)...
+            
+            l = []
+            
             deaths = 0
             while deaths < math.floor(0.85*population.mortality):
                 max_age = 0
@@ -255,7 +267,14 @@ class Universe():
                     if person.age > max_age:
                         max_age = person.age
                         person_to_die = person
+                        
                 # Update dictionary with ages by range:
+                # Al menos no está muriando gente repetida.
+                #print(str(person_to_die.person_id) + " - " + person_to_die.sex + " - " + str(person_to_die.age) + " - " + str(myround(person_to_die.age)))
+                if person.person_id in l:
+                    raise Exception("OYE!")
+                l.append(person_to_die.person_id)
+                
                 interval = myround(person_to_die.age)
                 population.ages_hist[self.year + person_to_die.sex][interval] -= 1
                 # Remove person
@@ -265,6 +284,7 @@ class Universe():
             # and some random people
             while deaths <= population.mortality:
                 person_to_die = random.choice(population.inhabitants)
+                #print(str(person_to_die.person_id) + " - " + person_to_die.sex + " - " + str(person_to_die.age) + " - " + str(myround(person_to_die.age)))
                 # Update dictionary with ages by range:
                 interval = myround(person_to_die.age)
                 population.ages_hist[self.year + person_to_die.sex][interval] -= 1
@@ -272,6 +292,16 @@ class Universe():
                 person_to_die.remove_agent()
                 self.remove_person_from_universe(person_to_die)
                 deaths += 1
+                
+                
+            print("\n")    
+            print("ESTADO TRAS MUERTES")
+            print("HOMBRES")
+            print(population.ages_hist[self.year + "M"])
+            print("\n")
+            print("MUJERES")
+            print(population.ages_hist[self.year + "F"])
+            print("\n")
             
             ## SALDO MIGRATORIO (?):
             ## THOSE WHO ARE UNHAPPY ARE GOING TO LEAVE
@@ -292,12 +322,20 @@ class Universe():
                         # I could assume they leave the universe but not
                         #  self.remove_person_from_universe(person)
                         saldo -= 1
-                        person.population_centre = random.choice(self.large_cities)
-                
                         # Update dictionary with ages by range:
                         interval = myround(person.age)
                         population.ages_hist[self.year + person.sex][interval] -= 1
-                        person.add_agent()
+                        person.remove_agent() # ya esta en person.migrate()
+                        
+                    
+                        person.population_centre = random.choice(self.large_cities)
+                
+                        # Update dictionary with ages by range:
+                        #interval = myround(person.age)
+                        #population.ages_hist[self.year + person.sex][interval] -= 1
+                        
+                        person.add_agent() # necesito añadirlo a la ciudad destino
+                        
                         
                     if saldo == population.saldo_migratorio_total:
                         break
@@ -306,7 +344,6 @@ class Universe():
             ### PEOPLE WHO ARRIVE IN THE POPULATION CENTRE ### 
             
             ## SALDO MIGRATORIO
-            #### ELIMINAR ESTA PARTE 
             ## New guys on the town ! Where are they coming from? 
             ## Dont know, just create new people
             if population.saldo_migratorio_total > 0:
@@ -321,17 +358,40 @@ class Universe():
                     self.add_person_to_universe(the_agent)
                     the_agent.add_agent()
                     new_guys += 1
+                   
                     # Update dictionary with ages by range:
                     interval = myround(the_agent.age)
                     population.ages_hist[self.year + the_agent.sex][interval] += 1
             
+            
+            
+            
             ### UPDATE AGES ###
             # HAY QUE ACTUALIZAR EN EL MOMENTO ADECUADO. RECIEN NACIDOS CON 1 AÑO !?
-            for person in self.universe_persons:
+            # EL PROBLEMA EN LA PIRÁMIDE POBLACIONAL ESTÁ EN ESTA LINEA!!!
+            # No estoy actualizando en la pirámide....
+            ## FIXED ERRO !!!
+            #for person in self.universe_persons:
+             #   person.age += 1
+              #  interval = myround(person.age)
+              #  person.population_centre.ages_hist[self.year + person.sex][interval] += 1
+                
+            for person in population.inhabitants:
+                #if person.population_centre.population_name not in ["Madrid", "Barcelona"]:
+                interval_1 = myround(person.age)
                 person.age += 1
-            
+                interval_2 = myround(person.age)
+                if interval_1 != interval_2:
+                    person.population_centre.ages_hist[self.year + person.sex][interval_1] -= 1
+                    person.population_centre.ages_hist[self.year + person.sex][interval_2] += 1
+                else:
+                    pass
+                #else:
+                #    person.age += 1
+                    
+                    
             ## THOSE WHO ARE NEWBORN BABIES
-            # Natality: new people with age 0 ¿Male or Female?
+            # Natality: new people with age -1 ¿Male or Female?
             new_borns = 0
             while new_borns <= population.natality:
                 dice =  random.random()
@@ -344,10 +404,11 @@ class Universe():
                 self.add_person_to_universe(the_agent)
                 # Add agent to population centre
                 the_agent.add_agent()
+                # Update counter
+                new_borns += 1
                 # Update dictionary with ages by range:
                 interval = myround(the_agent.age)
                 population.ages_hist[self.year + the_agent.sex][interval] += 1
-                new_borns += 1
                 
                 
             ### UPDATE MORTALITY, NATALITY, .... ###
@@ -358,8 +419,16 @@ class Universe():
             
             population.update_population(**d_args_update)            
             population.update_hist()
-            print(population.ages_hist)
+            
             print("\n")
+            print("FINAL ACTUALIZACION")
+            print("HOMBRES")
+            print(population.ages_hist[self.year + "M"])
+            print("\n")
+            print("MUJERES")
+            print(population.ages_hist[self.year + "F"])
+            print("\n")
+
 
             
             # Update year for the population centre

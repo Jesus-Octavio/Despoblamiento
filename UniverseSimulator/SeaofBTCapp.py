@@ -264,7 +264,7 @@ class PlotPage(tk.Frame, Pages):
 if __name__ == "__main__":
     # Toy dataframe
     my_df = pd.read_csv("data_aumentada_years.csv")
-    my_df = my_df[my_df["CODMUN"].isin([39085])]
+    my_df = my_df[my_df["CODMUN"].isin([39085, 39035])]
     #my_df = my_df[my_df["CODMUN"]]
     
     year = 2012

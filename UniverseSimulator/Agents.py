@@ -50,7 +50,7 @@ class Agents():
         self.population_centre.inhabitants.remove(self)
         if self.sex == "M":
             self.population_centre.num_men -= 1
-        else:
+        else: # sex = "F"
             self.population_centre.num_women -= 1
     
     ### SHOULD BE IN CLASS UNIVERSE ?
@@ -73,7 +73,7 @@ class Agents():
                 self.migration = self.new_migration
                 # That person is leaving the population centre 
                 # but is the person leaving the universe ???????????
-                self.remove_agent()
+                #self.remove_agent()
                 b = True
             else:
                 b = False
