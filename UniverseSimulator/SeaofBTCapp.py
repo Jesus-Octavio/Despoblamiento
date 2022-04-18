@@ -264,13 +264,15 @@ class PlotPage(tk.Frame, Pages):
 if __name__ == "__main__":
     # Toy dataframe
     my_df = pd.read_csv("data_aumentada_years.csv")
-    my_df = my_df[my_df["CODMUN"].isin([39085, 39035])]
+    my_df = my_df[my_df["CODMUN"].isin([33042])]
     #my_df = my_df[my_df["CODMUN"]]
     
     year = 2012
     
     my_universe = Universe(my_df, year)
     my_universe.Print()
+    
+    """
     for i in range(1, 4):
         my_universe.update()
         my_universe.Print()
@@ -278,6 +280,7 @@ if __name__ == "__main__":
     my_universe.regression_metrics()
     app = SeaofBTCapp(universe = my_universe)
     app.mainloop()
+    """
    
 #app = SeaofBTCapp()
 #app.mainloop()
