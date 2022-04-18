@@ -10,6 +10,7 @@ import numpy as np
 import numpy.random
 
 from PopulationCentre import PopulationCentre
+from Family import Family
 
 class Agents():
     def __init__(self, identifier, sex, age, population_centre):
@@ -33,6 +34,12 @@ class Agents():
         self.migration = 0
         self.new_migration = 0
         self.alive = 1
+    
+        
+        ##################### TRYING TO BUILD UP FAMILES #####################
+        # Boolean that inidicetes wether an agent is member of a family
+        self.family = False
+        ######################################################################
         
     ### SHOULD BE IN CLASS UNIVERSE ?
     ## SHOULD BE REMOVED?

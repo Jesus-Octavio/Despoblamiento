@@ -12,6 +12,8 @@ import plotly.subplots as sp
 import pandas as pd
 import numpy as np
 
+from Family import Family
+
 
 class PopulationCentre():
     # POPULATION CENTRES CONSTRUCTOE
@@ -48,6 +50,24 @@ class PopulationCentre():
         ## PLOT. POPULATION PYRAMID
         self.ages_hist = {}
         
+        
+        
+        ##################### TRYING TO BUILD UP FAMILES #####################
+        # Goal: families as a dictionary.
+        # I consider several types of family:
+        #    * unipersonal: single member family -lives alone-
+        #    * grupo: group of people that share a house but are not a family
+        #           I am thinking abouts students, flatmates in general...
+        #    * hijos: family with kids
+        # I pretend to create a dictionary whose keys ara family types and
+        # his values are families
+        self.families = {"fam_unipersonal" : [],
+                         "fam_grupo" : [],
+                         "fam_hijos" : [],
+                         "fam_otros" : []}
+        ######################################################################
+        
+    
         
     def update_population(self, nat, mor, saldott):
         self.natality = int(nat)
@@ -91,4 +111,13 @@ class PopulationCentre():
         
         print("\n")
         
+        
+    def Print_families(self):
+        for key in self.families.keys():
+            for family in self.families[key]:
+                print("---- FAMILY: "  + key + " ----")
+                for agent in family.members:
+                    print(agent.age)
+            print("\n")
+        print("\n")
     

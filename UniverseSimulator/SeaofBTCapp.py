@@ -19,6 +19,7 @@ from Universe import Universe
 from PopulationCentre import PopulationCentre
 from LargeCity import LargeCity
 from Agents import Agents
+from Family import Family
 
 import pandas as pd
 import numpy as np
@@ -264,13 +265,16 @@ class PlotPage(tk.Frame, Pages):
 if __name__ == "__main__":
     # Toy dataframe
     my_df = pd.read_csv("data_aumentada_years.csv")
+    my_families_df = pd.read_csv("families.csv")
     my_df = my_df[my_df["CODMUN"].isin([33042])]
+    my_families_df = my_families_df[my_families_df["CODMUN"].isin([33042])]
     #my_df = my_df[my_df["CODMUN"]]
     
     year = 2012
     
-    my_universe = Universe(my_df, year)
+    my_universe = Universe(my_df, my_families_df, year)
     my_universe.Print()
+
     
     """
     for i in range(1, 4):

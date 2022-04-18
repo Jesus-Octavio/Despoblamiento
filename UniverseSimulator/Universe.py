@@ -12,6 +12,12 @@ from PopulationCentre import PopulationCentre
 from LargeCity import LargeCity
 from Agents import Agents
 
+from Family import Family
+from Family import Fam_unipersonal
+from Family import Fam_grupo
+from Family import Fam_hijos
+
+
 # load regression metrics
 from sklearn.metrics import explained_variance_score
 from sklearn.metrics import mean_absolute_error
@@ -67,25 +73,48 @@ def myround(x, base=5):
 class Universe():
     # MAIN CLASS
     
-    def __init__(self, df, year):
+    def __init__(self, df, df_families, year):
         # CONSTRUCTOR
         global agent_idx
         agent_idx = 0
         # Year
         self.year = str(year)
-        # Read data from dataframe (I do not really like this)
+        # Read data from dataframe (population,......)
         self.main_dataframe = df
+        
+        
+        ##################### TRYING TO BUILD UP FAMILES #####################
+        # Read data from dataframe (FAMILIES)
+        self.families_dataframe = df_families
+        # Do we need a list of families in the complete universe????
+        ######################################################################
+        
+
         # List of population centres (nucleos de poblacion) if the universe
         population_centres = self.PopulationCentreBuilder()
         self.population_centres  = population_centres[0]
         self.cols_update = population_centres[1]
         # List of persons in the universe
         self.universe_persons = self.AgentsBuilder()
+        
+        
+        
+        ##################### TRYING TO BUILD UP FAMILES #####################
+        self.FamilyBuilder()
+        ######################################################################
+        
+        
+        
+        
+        
         # (Out-of-the (?)) universe city. Trying to model a large city.
         # E.g. Madrid or Barcelona. These cities are out of the universe
         # as they are part of other CCAA. But this large city does not need
         # to be out of our Universe
         self.large_cities = self.LargeCityBuilder()
+        
+        
+        
         
 
     def PopulationCentreBuilder(self):
@@ -238,6 +267,33 @@ class Universe():
             population.update_hist()
         return agents
             
+    
+    ####################### TRYING TO BUILD UP FAMILIES #######################
+    def FamilyBuilder(self):
+        # Consider each population centre
+        for population in self.population_centres:
+            # Given a population centre, select specific row in df
+            df_temp = self.families_dataframe.\
+                query('CODMUN == ' + str(population.population_id))
+            # Select variables
+            num_women_alone_less_65 = df_temp["MSME65"]
+            num_men_alone_less_65 = df_temp["HSME65"]
+            num_women_alone_more_65 = df_temp["MS65MA"]
+            num_men_alone_less_65 = df_temp["HS65MA"]
+            num_family_no_kids = df_temp["PJNOHJ"]
+            
+            for agent in population.inhabitants:
+                if agent.age > 100:
+                    my_family = Fam_unipersonal(population, agent)
+                    population.families["fam_unipersonal"].append(my_family)
+                    
+                
+            
+            
+            
+    ###########################################################################
+            
+        
                     
     def update(self):
         global agent_idx
@@ -599,13 +655,7 @@ class Universe():
             print("MSE:  %s" % mean_squared_error(total_pred, total_obs))
             print("R2:  %s" % r2_score(total_pred, total_obs))
             print("\n")
-            
-            
-            
-            
-            
-            
-            
+        
         
         
     def Print(self):
@@ -616,6 +666,9 @@ class Universe():
         print("\n")
         for population in self.population_centres:
             population.Print()
+            ################### TRYING TO BUILD UP FAMILIES ###################
+            population.Print_families()
+            ###################################################################
         for city in self.large_cities:
             city.Print()
             
