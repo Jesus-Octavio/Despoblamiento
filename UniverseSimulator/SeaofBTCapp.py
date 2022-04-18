@@ -271,12 +271,11 @@ if __name__ == "__main__":
     
     my_universe = Universe(my_df, year)
     my_universe.Print()
-    for i in range(1,4):
+    for i in range(1, 4):
         my_universe.update()
         my_universe.Print()
         
-    
-    #my_universe.plot_population_pyramid()
+    my_universe.regression_metrics()
     app = SeaofBTCapp(universe = my_universe)
     app.mainloop()
    

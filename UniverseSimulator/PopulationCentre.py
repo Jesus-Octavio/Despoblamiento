@@ -23,9 +23,9 @@ class PopulationCentre():
         self.year = year
         self.population_id = identifier
         self.population_name = name
-        self.num_men_init = hom
+        #self.num_men_init = hom
         self.num_men = num_men
-        self.num_women_init = muj
+        #self.num_women_init = muj
         self.num_women = num_women
         self.natality = nat
         self.mortality = mor
@@ -53,6 +53,7 @@ class PopulationCentre():
         self.natality = int(nat)
         self.mortality = int(mor)
         self.saldo_migratorio_total = int(saldott)
+        
         
     def update_hist(self):
         self.natality_hist.append(int(self.natality))

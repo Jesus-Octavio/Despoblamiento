@@ -12,6 +12,13 @@ from PopulationCentre import PopulationCentre
 from LargeCity import LargeCity
 from Agents import Agents
 
+# load regression metrics
+from sklearn.metrics import explained_variance_score
+from sklearn.metrics import mean_absolute_error
+from sklearn.metrics import mean_squared_error
+from sklearn.metrics import r2_score
+                            
+
 """
 from SeaofBTCapp import SeaofBTCapp
 from SeaofBTCapp import StartPage
@@ -242,13 +249,13 @@ class Universe():
             population.ages_hist[self.year + "M"] = population.ages_hist[str(int(self.year) - 1) + "M"].copy()
             population.ages_hist[self.year + "F"] = population.ages_hist[str(int(self.year) - 1) + "F"].copy()
             
-            print("INICIO ACTUALIZACION")
-            print("HOMBRES")
-            print(population.ages_hist[self.year + "M"])
-            print("\n")
-            print("MUJERES")
-            print(population.ages_hist[self.year + "F"])
-            print("\n")
+            #print("INICIO ACTUALIZACION")
+            #print("HOMBRES")
+            #print(population.ages_hist[self.year + "M"])
+            #print("\n")
+            #print("MUJERES")
+            #print(population.ages_hist[self.year + "F"])
+            #print("\n")
 
             
             ### PEOPLE WHO LEAVE THE POPULATION CENTRE ###
@@ -294,14 +301,14 @@ class Universe():
                 deaths += 1
                 
                 
-            print("\n")    
-            print("ESTADO TRAS MUERTES")
-            print("HOMBRES")
-            print(population.ages_hist[self.year + "M"])
-            print("\n")
-            print("MUJERES")
-            print(population.ages_hist[self.year + "F"])
-            print("\n")
+            #print("\n")    
+            #print("ESTADO TRAS MUERTES")
+            #print("HOMBRES")
+            #print(population.ages_hist[self.year + "M"])
+            #print("\n")
+            #print("MUJERES")
+            #print(population.ages_hist[self.year + "F"])
+            #print("\n")
             
             ## SALDO MIGRATORIO (?):
             ## THOSE WHO ARE UNHAPPY ARE GOING TO LEAVE
@@ -418,21 +425,23 @@ class Universe():
                     query('CODMUN == ' + str(population.population_id))[column+self.year]
             
             population.update_population(**d_args_update)            
-            population.update_hist()
-            
-            print("\n")
-            print("FINAL ACTUALIZACION")
-            print("HOMBRES")
-            print(population.ages_hist[self.year + "M"])
-            print("\n")
-            print("MUJERES")
-            print(population.ages_hist[self.year + "F"])
-            print("\n")
-
-
+                        
+            #print("\n")
+            #print("FINAL ACTUALIZACION")
+            #print("HOMBRES")
+            #print(population.ages_hist[self.year + "M"])
+            #print("\n")
+            #print("MUJERES")
+            #print(population.ages_hist[self.year + "F"])
+            #print("\n")
             
             # Update year for the population centre
             population.year = int(population.year) + 1
+            population.update_hist()
+            #print(population.year_hist)
+            
+            
+            
             
                
     def remove_person_from_universe(self, agent):
@@ -567,6 +576,36 @@ class Universe():
                     bargap = 0.0, bargroupgap = 0,)
         #fig.show()
         return fig
+    
+    def regression_metrics(self):
+        print("--- REGRESSION METRICS ---")
+        for population in self.population_centres:
+            years = population.year_hist
+            total_pred = [sum(x) for x in zip(population.men_hist, population.women_hist)]
+            total_obs = []
+            for year in years:
+                temp = self.main_dataframe.\
+                    query('CODMUN == ' + str(population.population_id))["POB"+ str(year)].\
+                    values
+                temp = int(temp)
+                total_obs.append(temp)
+        
+            
+            print("- " + population.population_name.upper() + " -")
+            print(total_pred)
+            print(total_obs)
+            print("Explained variance:  %s" % explained_variance_score(total_pred, total_obs))
+            print("MAE:  %s" % mean_absolute_error(total_pred, total_obs))
+            print("MSE:  %s" % mean_squared_error(total_pred, total_obs))
+            print("R2:  %s" % r2_score(total_pred, total_obs))
+            print("\n")
+            
+            
+            
+            
+            
+            
+            
         
         
     def Print(self):
@@ -580,9 +619,13 @@ class Universe():
         for city in self.large_cities:
             city.Print()
             
+    """
+    # Not useful anymore
+    # But leave it here just in case
     def Plot(self):
         for population in self.population_centres:
             population.plot_hist().show()
+    """    
 
 """
 
