@@ -62,9 +62,11 @@ class PopulationCentre():
         # I pretend to create a dictionary whose keys ara family types and
         # his values are families
         self.families = {"fam_unipersonal" : [],
-                         "fam_grupo" : [],
-                         "fam_hijos" : [],
-                         "fam_otros" : []}
+                         "fam_monoparental" : [],
+                         "fam_no_ninios" : [],
+                         "fam_ninios" : [],
+                         "fam_otros" : [],
+                         "fam_centros" : []}
         ######################################################################
         
     
@@ -114,10 +116,10 @@ class PopulationCentre():
         
     def Print_families(self):
         for key in self.families.keys():
-            for family in self.families[key]:
-                print("---- FAMILY: "  + key + " ----")
-                for agent in family.members:
-                    print(agent.age)
-            print("\n")
+            print("###### FAMILY: "  + key + " : " + str(len(self.families[key])) +   " #######")
+            #for family in self.families[key]:
+             #   print("---- FAMILY: "  + key + " ----")
+              #  for agent in family.members:
+               #     print("Age %s ; Status %s "% (agent.age, agent.family))
         print("\n")
     

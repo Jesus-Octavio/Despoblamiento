@@ -5,8 +5,6 @@ Created on Fri Mar 11 09:43:03 2022
 
 @author: jesus
 """
-import pandas as pd
-import numpy as np
 
 from PopulationCentre import PopulationCentre
 from LargeCity import LargeCity
@@ -14,8 +12,11 @@ from Agents import Agents
 
 from Family import Family
 from Family import Fam_unipersonal
-from Family import Fam_grupo
-from Family import Fam_hijos
+from Family import Fam_monoparental
+from Family import Fam_pareja_no_ninios
+from Family import Fam_ninios
+from Family import Fam_centros
+from Family import Fam_otros
 
 
 # load regression metrics
@@ -25,25 +26,23 @@ from sklearn.metrics import mean_squared_error
 from sklearn.metrics import r2_score
                             
 
-"""
-from SeaofBTCapp import SeaofBTCapp
-from SeaofBTCapp import StartPage
-from SeaofBTCapp import PageOne
-from SeaofBTCapp import PopulationCentrePage
-from SeaofBTCapp import PlotPage
-from SeaofBTCapp import temp
-"""
 
-
-
-
-
+# plots and more
+import pandas as pd
+import random
+import numpy as np
 import random, time, math, sys
 import plotly.express as px
 import plotly.graph_objects as go
 import plotly.subplots as sp
 from plotly.subplots import make_subplots
 import plotly.offline as py
+import warnings
+import re
+from varname import nameof
+from itertools import chain
+
+
 
 def myround(x, base=5):     
     """
@@ -269,26 +268,501 @@ class Universe():
             
     
     ####################### TRYING TO BUILD UP FAMILIES #######################
+    
+    
     def FamilyBuilder(self):
         # Consider each population centre
         for population in self.population_centres:
+            
             # Given a population centre, select specific row in df
             df_temp = self.families_dataframe.\
                 query('CODMUN == ' + str(population.population_id))
-            # Select variables
-            num_women_alone_less_65 = df_temp["MSME65"]
-            num_men_alone_less_65 = df_temp["HSME65"]
-            num_women_alone_more_65 = df_temp["MS65MA"]
-            num_men_alone_less_65 = df_temp["HS65MA"]
-            num_family_no_kids = df_temp["PJNOHJ"]
             
-            for agent in population.inhabitants:
-                if agent.age > 100:
-                    my_family = Fam_unipersonal(population, agent)
-                    population.families["fam_unipersonal"].append(my_family)
-                    
+            ##### 1 people families #####
+            fam1pe = df_temp["1PER"].values[0]
+            
+            msme65 = df_temp["MSME65"].values[0]
+            hsme65 = df_temp["HSME65"].values[0]
+            ms65ma = df_temp["MS65MA"].values[0]
+            hs65ma = df_temp["HS65MA"].values[0]
+                 
+            msme65_init = df_temp["MSME65"].values[0]
+            hsme65_init = df_temp["HSME65"].values[0]
+            ms65ma_init = df_temp["MS65MA"].values[0]
+            hs65ma_init = df_temp["HS65MA"].values[0]
+            
+            
+            while (msme65 > 0) and (fam1pe > 0):
+                my_family = Fam_unipersonal(population)
+                population.families["fam_unipersonal"].append(my_family)
+                msme65 -= 1
+                fam1pe-= 1
+            
+            while (hsme65 > 0) and (fam1pe > 0):
+                my_family = Fam_unipersonal(population)
+                population.families["fam_unipersonal"].append(my_family)
+                hsme65 -= 1
+                fam1pe-= 1
+                
+            while (ms65ma > 0) and (fam1pe > 0):
+                my_family = Fam_unipersonal(population)
+                population.families["fam_unipersonal"].append(my_family)
+                ms65ma -= 1
+                fam1pe-= 1
+                
+            while (hs65ma > 0) and (fam1pe > 0):
+                my_family = Fam_unipersonal(population)
+                population.families["fam_unipersonal"].append(my_family)
+                hs65ma -= 1
+                fam1pe-= 1
+                
+            while (fam1pe > 0):
+                my_family = Fam_unipersonal(population)
+                population.families["fam_unipersonal"].append(my_family)
+                fam1pe -= 1
+                
+            #print("Familias restantes de 1 persona: %s" % fam1pe)
+            
+            
+            ##### 2 people families #####
+            fam2pe = df_temp["2PER"].values[0]
+            
+            pmhj25  = df_temp["PMHJ25"].values[0]
+            pmthi25 = df_temp["PMTHI25"].values[0]
+            pjnohj  = df_temp["PJNOHJ"].values[0]
+            
+            pmhj25_init  = df_temp["PMHJ25"].values[0]
+            pmthi25_init = df_temp["PMTHI25"].values[0]
+            pjnohj_init  = df_temp["PJNOHJ"].values[0]
+            
+                        
+            
+            while (pjnohj > 0) and (fam2pe > 0):
+                my_family = Fam_pareja_no_ninios(population)
+                population.families["fam_no_ninios"].append(my_family)
+                pjnohj -= 1
+                fam2pe -= 1
+            
+            while (pmthi25 > 0) and (fam2pe > 0):
+                my_family = Fam_monoparental(population, kids_limit = 2)
+                population.families["fam_monoparental"].append(my_family)
+                pmthi25 -= 1
+                fam2pe -= 1
+                
+            while (pmhj25 > 0) and (fam2pe > 0):
+                my_family = Fam_monoparental(population, kids_limit = 2)
+                population.families["fam_monoparental"].append(my_family)
+                pmhj25 -= 1
+                fam2pe -= 1
+                
+                
+            while (fam2pe > 0):
+                my_family = Fam_otros(population, limit = 2)
+                population.families["fam_otros"].append(my_family)
+                fam2pe -= 1
+            
+            #print("Familias restantes de 2 persona: %s" % fam2pe)
+            
+
+            
+            ##### 3-4-5-6>= people families#####
+            fam3pe = df_temp["3PER"].values[0]
+            fam4pe = df_temp["4PER"].values[0]
+            fam5pe = df_temp["5PER"].values[0]
+            fam5pe = df_temp["5PER"].values[0]
+            fam6pe = df_temp["6OMASP"].values[0]
+            
+            pjhja25      = df_temp["PJHJA25"].values[0]
+            pjthj25      = df_temp["PJTHJ25"].values[0]
+            pjhj25       = pjthj25 + pjhja25
+            #pjhj25_init  = pjthj25 + pjhja25
+            
+            # thiking about shared flats for students...
+            mpnofam = df_temp["MPNOFAM"].values[0]
+            
+            # otro tipo de hogar ---? elderly houses ? students residences ? 
+            # health centers, ej, San Juan de Dios en cienpozuelos xd ? 
+            # hostels ? 
+            othg = df_temp["OTHG"].values[0]
+            
+            
+            
+            while (pjhj25 > 0) and ((fam3pe > 0) or (fam4pe > 0) or (fam5pe > 0) or (fam6pe > 0)):
+                
+                # my_people = random.randint(3,8)
+                available = []
+                if (fam3pe > 0): 
+                    available.append(int(re.findall(r'\d+', nameof(fam3pe))[0]))
+                if (fam4pe > 0): 
+                    available.append(int(re.findall(r'\d+', nameof(fam4pe))[0]))
+                if (fam5pe > 0): 
+                    available.append(int(re.findall(r'\d+', nameof(fam5pe))[0]))
+                if (fam6pe > 0): 
+                    available = available + list((int(re.findall(r'\d+', nameof(fam6pe))[0]), 7, 8))
+                
+                my_people = random.choice(available)
+                
+                if my_people == 3:
+                    fam3pe -= 1
+                elif my_people == 4:
+                    fam4pe -= 1
+                elif my_people == 5:
+                    fam5pe -= 1
+                else:
+                    fam6pe -= 1
+                
+                kids_limit = my_people - 2
+                my_family = Fam_ninios(population, kids_limit)
+                population.families["fam_ninios"].append(my_family)
+                
+                pjhj25 -= 1
+                
+                
+            while (mpnofam > 0) and ((fam3pe > 0) or (fam4pe > 0) or (fam5pe > 0) or (fam6pe > 0)):
+                
+                # my_people = random.randint(3,8)
+                available = []
+                if (fam3pe > 0): 
+                    available.append(int(re.findall(r'\d+', nameof(fam3pe))[0]))
+                if (fam4pe > 0): 
+                    available.append(int(re.findall(r'\d+', nameof(fam4pe))[0]))
+                if (fam5pe > 0): 
+                    available.append(int(re.findall(r'\d+', nameof(fam5pe))[0]))
+                if (fam6pe > 0): 
+                    available = available + list((int(re.findall(r'\d+', nameof(fam6pe))[0]), 7, 8))
+                
+                my_people = random.choice(available)
+                
+                if my_people == 3:
+                    fam3pe -= 1
+                elif my_people == 4:
+                    fam4pe -= 1
+                elif my_people == 5:
+                    fam5pe -= 1
+                else:
+                    fam6pe -= 1
+                
+                
+                my_family = Fam_otros(population, limit = my_people)
+                population.families["fam_otros"].append(my_family)
+                
+                mpnofam -= 1
+            
+        
+            while (fam3pe > 0):
+                my_family = Fam_otros(population, limit = 3)
+                population.families["fam_otros"].append(my_family)
+                fam3pe -= 1
+                
+            #print("Familias restantes de 3 persona: %s" % fam3pe)
+            
+            ##### 4 people families #####
+                        
+            while (fam4pe > 0):
+                my_family = Fam_otros(population, limit = 4)
+                population.families["fam_otros"].append(my_family)
+                fam4pe -= 1
+            
+            #print("Familias restantes de 4 persona: %s" % fam4pe)
+            
+            ##### 5 people families #####
+            
+            
+            while (fam5pe > 0):
+                my_family = Fam_otros(population, limit = 5)
+                population.families["fam_otros"].append(my_family)
+                fam5pe -= 1
+        
+            #print("Familias restantes de 5 persona: %s" % fam5pe)
+            
+            ##### 6 or more people families #####
+            
+            
+            while (fam6pe > 0):
+                my_family = Fam_otros(population, limit = 6)
+                population.families["fam_otros"].append(my_family)
+                fam6pe -= 1
+            
+            #print("Familias restantes de 6 persona: %s" % fam6pe)   
+            #print("\n")
+                
                 
             
+            random.shuffle(population.inhabitants)
+            
+            oldies = []
+            youngsters = []
+            kids = []
+            male_parent_susceptible = []
+            female_parent_susceptible = []
+
+            
+            
+            for agent in population.inhabitants:
+                
+                if agent.age >= 90:
+                    oldies.append(agent)
+                
+                elif 65 < agent.age < 90:
+    
+                    # Male agents
+                    if (agent.sex == "M"):
+                        if (hs65ma_init > 0):
+                            for family in population.families["fam_unipersonal"]:
+                                if len(family.members) < 1:
+                                    family.update(agent)
+                                    hs65ma_init -= 1
+                                    break
+                        if agent.family == False:
+                            oldies.append(agent)
+                    
+                    # female agents       
+                    elif (agent.sex == "F"):
+                        if (ms65ma_init > 0):
+                            for family in population.families["fam_unipersonal"]:
+                                if len(family.members) < 1:
+                                    family.update(agent)
+                                    ms65ma_init -= 1
+                                    break
+                                
+                        if agent.family == False:
+                            oldies.append(agent)
+                       
+                            
+                elif 25 < agent.age <= 65:
+                    
+                    # Male agents
+                    if (agent.sex == "M"): 
+                        if (hsme65_init > 0):
+                            for family in population.families["fam_unipersonal"]:
+                                if len(family.members) < 1:
+                                    family.update(agent)
+                                    hsme65_init -= 1
+                                    break
+                                
+                        if agent.family == False:
+                            male_parent_susceptible.append(agent)
+                        
+                                
+                    
+                    # female agents        
+                    else: #(agent.sex == "F"):
+                        if (msme65_init > 0):
+                            for family in population.families["fam_unipersonal"]:
+                                if len(family.members) < 1:
+                                    family.update(agent)
+                                    msme65_init -= 1
+                                    break
+                        
+                        if agent.family == False:
+                            female_parent_susceptible.append(agent)
+                                
+                  
+                elif 18 <= agent.age <= 25:
+                    youngsters.append(agent)
+                    
+                else: # 0<= agent.age <18
+                    for family in population.families["fam_ninios"]:
+                        if len(family.kids) < family.kids_limit:
+                            family.update(agent = agent, rol = "kid")
+                            break
+                    if agent.family == False:
+                        kids.append(agent)
+                            
+            
+            
+            # assign youngsters
+            # Iterate over the same list we are removing elements.... bad idea
+            #  copy is needed
+            youngsters_copy = youngsters.copy()
+            for young in youngsters_copy:                
+                for family in population.families["fam_ninios"]:
+                    if len(family.kids) < family.kids_limit:
+                        family.update(agent = young, rol = "kid")
+                        youngsters.remove(young)
+                        break
+                else:
+                    continue
+            
+            youngsters_copy = youngsters.copy()
+            for young in youngsters_copy:                
+                for family in population.families["fam_otros"]:
+                    if family.limit > len(family.members):
+                        family.update(young)
+                        youngsters.remove(young)
+                        break
+                else:
+                    continue
+            
+            
+            
+            # padres de familia
+            male_parent_susceptible_copy = male_parent_susceptible.copy()
+            for male in male_parent_susceptible_copy:
+                for family in population.families["fam_ninios"]:
+                    if not family.father:
+                        my_bool = True
+                        for elem in family.kids:
+                                my_bool = my_bool and (male.age > elem.age + 20)
+                        if my_bool:
+                            family.update(male, rol = "father")
+                            male_parent_susceptible.remove(male)
+                            break
+                    
+ 
+            # madres de familia
+            female_parent_susceptible_copy = female_parent_susceptible.copy()
+            for female in female_parent_susceptible_copy:
+                for family in population.families["fam_ninios"]:
+                    if not family.mother:
+                        # if theres a father... age difference
+                        if family.father:
+                            if ((female.age - 5 <= family.father[0].age <= female.age + 5) 
+                             or (family.father[0].age - 5 <= female.age <= family.father[0].age + 5)): 
+                                family.update(female, rol = "mother")
+                                female_parent_susceptible.remove(female)
+                                break
+                        else:
+                            family.update(female, rol = "mother")
+                            female_parent_susceptible.remove(female)
+                            break
+            
+            
+            # parejas sin hijos
+            male_no_parent_susceptible_copy = male_parent_susceptible.copy()
+            for male in male_no_parent_susceptible_copy:
+                for family in population.families["fam_no_ninios"]:
+                    if (not family.boy):
+                        family.update(male)
+                        male_parent_susceptible.remove(male)
+                        break
+            
+            female_no_parent_susceptible_copy = female_parent_susceptible.copy()
+            for female in female_no_parent_susceptible_copy:
+                for family in population.families["fam_no_ninios"]:
+                    if (not family.girl):
+                        if family.boy:
+                            if ((female.age - 5 <= family.boy[0].age <= female.age + 5) 
+                                 or (family.boy[0].age - 5 <= female.age <= family.boy[0].age + 5)): 
+                                family.update(female)
+                                female_parent_susceptible.remove(female)
+                                break
+                        else:
+                            family.update(female)
+                            female_parent_susceptible.remove(female)
+                            break
+            
+            
+   
+            print("RESTANTES")    
+            fam = 0
+            nofam = 0
+            for agent in population.inhabitants:
+                if agent.family:
+                    fam += 1
+                else:
+                    if agent.age < 25:
+                        print("Edad %s. Sexo %s" % (agent.age, agent.sex))
+                    nofam += 1
+            
+            for item in list(chain(*list(population.families.values()))):
+                if len(item.members) == 0:
+                    pass
+                    #print(type(item))
+            print("People do have a family: %s" % fam)
+            print("People do not have a family yet: %s" % nofam)
+            
+            
+            rest = kids+youngsters+male_parent_susceptible+female_parent_susceptible+oldies
+            rest_copy = rest.copy()
+            print("RESTO %s" % len(rest))
+            print("\n")
+            
+
+            
+            for agent in rest_copy:
+                for family in population.families["fam_otros"]:
+                    if len(family.members) < family.limit:
+                            family.update(agent)
+                            rest.remove(agent)
+                            break
+            
+            
+            
+            print("\n")    
+            print("RESTANTES")    
+            fam = 0
+            nofam = 0
+            for agent in population.inhabitants:
+                if agent.family:
+                    fam += 1
+                else:
+                    if agent.age < 25:
+                        print("Edad %s. Sexo %s" % (agent.age, agent.sex))
+                    nofam += 1
+            
+            for item in list(chain(*list(population.families.values()))):
+                if len(item.members) == 0:
+                    pass
+                    #print(type(item))
+            print("People do have a family: %s" % fam)
+            print("People do not have a family yet: %s" % nofam)
+            print("RESTO %s" % len(rest))   
+            print("\n")
+            
+        
+            # otro tipo hogar
+            
+            temp = 0
+            for i in range(math.floor(othg*0.25)):
+                capacity = random.randint(50, 100)
+                temp += capacity
+                centre = Fam_centros(population, capacity)
+                population.families["fam_centros"].append(centre)
+                
+            print("capacidad %s" % temp)
+            rest_copy = rest.copy()
+            
+            for centre in population.families["fam_centros"]:
+                for agent in rest_copy:
+                    if not agent.family:
+                        if len(centre.members) < centre.capacity:
+                            centre.update(agent)
+                            rest.remove(agent)
+                        else:
+                            break
+                            rest_copy = rest.copy()
+                        
+                        
+            
+            
+               
+            
+            print("\n")    
+            print("RESTANTES")    
+            print("RESTO %s" % len(rest))
+            fam = 0
+            nofam = 0
+            for agent in population.inhabitants:
+                if agent.family:
+                    fam += 1
+                else:
+                    
+                    print("Edad %s. Sexo %s" % (agent.age, agent.sex))
+                    #print(elem in oldies)
+                    nofam += 1
+            
+            for item in list(chain(*list(population.families.values()))):
+                if len(item.members) == 0:
+                    pass
+                    #print(type(fam))
+            print("People do have a family: %s" % fam)
+            print("People do not have a family yet: %s" % nofam)
+            print("\n")
+            
+            
+        
+                
             
             
     ###########################################################################
@@ -495,6 +969,12 @@ class Universe():
             population.year = int(population.year) + 1
             population.update_hist()
             #print(population.year_hist)
+            
+            
+            
+            
+            
+            
             
             
             

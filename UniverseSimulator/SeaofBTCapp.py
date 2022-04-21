@@ -124,33 +124,7 @@ class PageOne(tk.Frame):
                   command = lambda: controller.show_frame(StartPage)).pack()
         
         
-        #button2 = tk.Button(self, text='BACK', command=lambda: controller.show_frame(StartPage))
-        
-        #comein_pic_label.pack()
-        #button0.pack()
-        #button1.pack()
-        #button2.pack()
-        
-"""        
-class PopulationCentrePage(tk.Frame):
-    
-    def __init__(self, parent, controller):
-        
-        global comein_pic
-        
-        tk.Frame.__init__(self, parent)
-        
-        self.label = tk.Label(self, text = "SELECCIONE MUNICIPIO").pack()
-        
-        muni = ["ALCAZAR DE SAN JUAMN", "CAMPO DE CRIPTANA", "TOMELLOSO"]
-        ids = ["1", "2", "3"]
-        
-        for i in range(3):
-            button = tk.Button(self, text = str(i),
-                               command = lambda : controller.show_frame_set_population(PlotPage, muni[i], ids[i])).pack()
-#            controller.set_population(muni[i], ids[i]
-"""
-
+      
 class PopulationCentrePage(Pages, tk.Frame,):
     
     def __init__(self, parent, controller):
@@ -266,14 +240,14 @@ if __name__ == "__main__":
     # Toy dataframe
     my_df = pd.read_csv("data_aumentada_years.csv")
     my_families_df = pd.read_csv("families.csv")
-    my_df = my_df[my_df["CODMUN"].isin([33042])]
-    my_families_df = my_families_df[my_families_df["CODMUN"].isin([33042])]
+    my_df = my_df[my_df["CODMUN"].isin([39075])]
+    my_families_df = my_families_df[my_families_df["CODMUN"].isin([39075])]
     #my_df = my_df[my_df["CODMUN"]]
     
     year = 2012
     
     my_universe = Universe(my_df, my_families_df, year)
-    my_universe.Print()
+    #my_universe.Print()
 
     
     """
