@@ -55,18 +55,12 @@ class PopulationCentre():
         ##################### TRYING TO BUILD UP FAMILES #####################
         # Goal: families as a dictionary.
         # I consider several types of family:
-        #    * unipersonal: single member family -lives alone-
-        #    * grupo: group of people that share a house but are not a family
-        #           I am thinking abouts students, flatmates in general...
-        #    * hijos: family with kids
-        # I pretend to create a dictionary whose keys ara family types and
+        #    * fam_one_person: single member family -lives alone-
+        #    * fam_kids: family with kids: mother + father`+ kids
+        # I pretend to create a dictionary whose keys are family types and
         # his values are families
-        self.families = {"fam_unipersonal" : [],
-                         "fam_monoparental" : [],
-                         "fam_no_ninios" : [],
-                         "fam_ninios" : [],
-                         "fam_otros" : [],
-                         "fam_centros" : []}
+        self.families = {"fam_one_person" : [],
+                         "fam_kids"       : []}
         ######################################################################
         
     

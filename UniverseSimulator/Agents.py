@@ -10,10 +10,14 @@ import numpy as np
 import numpy.random
 
 from PopulationCentre import PopulationCentre
-from Family import Family
+
+from Family_version_3 import Family
+from Family_version_3 import Fam_one_person
+from Family_version_3 import Fam_kids
 
 class Agents():
-    def __init__(self, identifier, sex, age, population_centre):
+    def __init__(self, identifier, sex, age, population_centre,
+                 is_kid, maybe_parent): ## TRYING TO BUILD UP FAMILIES
         # AGENTS/PEOPLE CONSTRUCTOR
         self.person_id = identifier
         self.sex = sex
@@ -37,12 +41,14 @@ class Agents():
     
         
         ##################### TRYING TO BUILD UP FAMILES #####################
-        # Boolean that inidicetes wether an agent is member of a family
+        # Boolean that inidicetes whether an agent is member of a family
         self.family = False
+        self.is_kid = is_kid
+        self.maybe_parent = maybe_parent
+        
         ######################################################################
         
-    ### SHOULD BE IN CLASS UNIVERSE ?
-    ## SHOULD BE REMOVED?
+    
     def add_agent(self, new = True):
         # Add agent to population centre
         self.population_centre.inhabitants.append(self)
@@ -60,14 +66,24 @@ class Agents():
         else: # sex = "F"
             self.population_centre.num_women -= 1
     
-    ### SHOULD BE IN CLASS UNIVERSE ?
-    ## SHOULD BE REMOVED?    
     def die(self):
         self.remove_agent()
         
+    ####################### TRYING TO BUILD UP FAMILES #######################
+    def family_rol(self):
+        if self.age < 25:
+            self.is_kid = True
+            self.maybe_parent = False
+        elif 25 <= self.age <= 60:
+            self.is_kid = False
+            self.maybe_parent = True
+        else:
+            self.is_kid = False
+            self.maybe_parent = False
+    ##########################################################################
+        
+        
     
-    ### SHOULD BE IN CLASS UNIVERSE ?
-    ## SHOULD BE REMOVED?        
     def migrate(self):
         # If a person want to migrate
         # If the peson is "unhappy" (?)

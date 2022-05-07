@@ -19,7 +19,8 @@ from Universe import Universe
 from PopulationCentre import PopulationCentre
 from LargeCity import LargeCity
 from Agents import Agents
-from Family import Family
+from Family_version_3 import Fam_one_person
+from Family_version_3 import Fam_kids
 
 import pandas as pd
 import numpy as np
@@ -240,14 +241,14 @@ if __name__ == "__main__":
     # Toy dataframe
     my_df = pd.read_csv("data_aumentada_years.csv")
     my_families_df = pd.read_csv("families.csv")
-    my_df = my_df[my_df["CODMUN"].isin([39075])]
-    my_families_df = my_families_df[my_families_df["CODMUN"].isin([39075])]
+    my_df = my_df[my_df["CODMUN"].isin([39085])]
+    my_families_df = my_families_df[my_families_df["CODMUN"].isin([39085])]
     #my_df = my_df[my_df["CODMUN"]]
     
     year = 2012
     
     my_universe = Universe(my_df, my_families_df, year)
-    #my_universe.Print()
+    my_universe.Print()
 
     
     """
