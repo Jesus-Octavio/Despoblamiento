@@ -16,6 +16,7 @@ from Family_version_3 import Fam_one_person
 from Family_version_3 import Fam_kids
 
 class Agents():
+    
     def __init__(self, identifier, sex, age, population_centre,
                  is_kid, maybe_parent): ## TRYING TO BUILD UP FAMILIES
         # AGENTS/PEOPLE CONSTRUCTOR
@@ -45,8 +46,23 @@ class Agents():
         self.family = False
         self.is_kid = is_kid
         self.maybe_parent = maybe_parent
-        
         ######################################################################
+    
+
+
+    ####################### TRYING TO BUILD UP FAMILES #######################
+    # When updating, roles change
+    def family_rol(self):
+        if self.age < 25:
+            self.is_kid = True
+            self.maybe_parent = False
+        elif 25 <= self.age <= 60:
+            self.is_kid = False
+            self.maybe_parent = True
+        else:
+            self.is_kid = False
+            self.maybe_parent = False
+    ##########################################################################
         
     
     def add_agent(self, new = True):
@@ -68,20 +84,7 @@ class Agents():
     
     def die(self):
         self.remove_agent()
-        
-    ####################### TRYING TO BUILD UP FAMILES #######################
-    def family_rol(self):
-        if self.age < 25:
-            self.is_kid = True
-            self.maybe_parent = False
-        elif 25 <= self.age <= 60:
-            self.is_kid = False
-            self.maybe_parent = True
-        else:
-            self.is_kid = False
-            self.maybe_parent = False
-    ##########################################################################
-        
+            
         
     
     def migrate(self):
@@ -115,5 +118,7 @@ class Agents():
         print("Sex: %s" % self.sex)
         print("Happiness: %s" % self.happiness)
         print("\n")
+        
+        
         
         

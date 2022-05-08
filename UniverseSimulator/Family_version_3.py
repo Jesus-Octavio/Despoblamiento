@@ -14,6 +14,8 @@ class Family():
     
     def __init__(self, population_centre):
         self.population_centre = population_centre
+    
+    
         
 class Fam_one_person(Family):
     
@@ -63,42 +65,53 @@ class Fam_kids(Family):
                 self.members.append(agent)
                 agent.family = True
                 #warnings.warn("KID NUMBER %s OF %s" % (len(self.kids), self.kids_limit))
+    
+      
+    # Break up of a family when all of the kids are older then 25 yars old
+    def disband(self):
+        # Comnsider each kid
+        for kid in self.kids:
+            if self.kid.age >= 25:
+                self.kids.remove(kid)
+                my_family = Fam_one_person(kid.population_centre)
+                my_family.update(kid)
+                self.population_centre.families["fam_one_person"].append(my_family)
+            
+        # no more kids in the family -> free agents
+        if not self.kids: 
+            
+            # new one person family for the father
+            my_family = Fam_one_person(self.father.population_centre)
+            my_family.update(self.father)
+            # add fmaily to population centre
+            self.population_centre.families["fam_one_person"].append(my_family)
+            
+            # new one persone fmaily for the mother
+            my_family = Fam_one_person(self.mother.population_centre)
+            my_family.update(self.mother)
+            # add family to population centre
+            self.population_centre.families["fam_one_person"].append(my_family)
+            
+            # remove family
+            self.population_centre.families["fam_kids"].remove(self)
+            
+            return True
+            
+        # the family still has kids
+        # do not remove family
+        else:
+            pass
+            return False
+            
+                
+                
+                
+                
+                    
+                    
+            
         
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-        
-            
             
     
+            
+            

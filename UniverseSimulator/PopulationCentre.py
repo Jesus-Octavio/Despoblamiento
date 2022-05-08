@@ -12,7 +12,10 @@ import plotly.subplots as sp
 import pandas as pd
 import numpy as np
 
-from Family import Family
+from Family_version_3 import Family
+from Family_version_3 import Fam_one_person
+from Family_version_3 import Fam_kids
+
 
 
 class PopulationCentre():

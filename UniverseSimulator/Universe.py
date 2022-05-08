@@ -350,15 +350,12 @@ class Universe():
                                             family.update(agent, "mother")
                                             break
                             
-                        # agent is neither compatiible with kids or partner
+                        # agent is neither compatible with kids or partner
                         if not agent.family:
                             my_family = Fam_one_person(population)
                             my_family.update(agent)
                             population.families["fam_one_person"].append(my_family)
-                            
-                            
-                                                                                
-                                        
+                                            
                     else:
                         warnings.warn("UNDEFINED AGENT ROLE FOR FAMILY")
                     
@@ -370,36 +367,24 @@ class Universe():
             
             
             # Check agents
-            for agent in population.inhabitants:
+            #for agent in population.inhabitants:
                 # if the agent is a kid, check it has been asigned to a family
-                if agent.is_kid and (not agent.family):
-                    print("KID WITHOUT FAMILY")
+            #    if agent.is_kid and (not agent.family):
+            #        print("KID WITHOUT FAMILY")
                 # check if the agent has no family
-                if not agent.family:
-                    print("AGENT WITHOUT FAMILY")
+            #    if not agent.family:
+            #        print("AGENT WITHOUT FAMILY")
                 
                     
             # Check all families have as many kids as possible
-            for family in population.families["fam_kids"]:
-                if len(family.kids) < family.kids_limit:
-                   print("THERE'S ROOM FOR KIDS: %s" % 
-                                 (family.kids_limit - len(family.kids)))
-                if not family.mother:
-                    print("FAMILY WITHOUT MOTHER !")
-                if not family.father:
-                    print("FAMILY WITHOUT MOTHER !")
-                    
-            
-                    
-            
-                
-            
-            
-            
-            
-                       
-            
-            
+            #for family in population.families["fam_kids"]:
+            #    if len(family.kids) < family.kids_limit:
+            #       print("THERE'S ROOM FOR KIDS: %s" % 
+            #                     (family.kids_limit - len(family.kids)))
+            #    if not family.mother:
+            #        print("FAMILY WITHOUT MOTHER !")
+            #    if not family.father:
+            #        print("FAMILY WITHOUT FATHER !")
     ###########################################################################
             
         
@@ -424,13 +409,11 @@ class Universe():
 
             
             ### PEOPLE WHO LEAVE THE POPULATION CENTRE ###
-            
             ## THOSE WHO DIE
             # Who is going to die?
             # I guess the oldest people (85% of total deaths)...
             
-            l = []
-            
+         
             deaths = 0
             while deaths < math.floor(0.85*population.mortality):
                 max_age = 0
@@ -441,18 +424,13 @@ class Universe():
                         person_to_die = person
                         
                 # Update dictionary with ages by range:
-                # Al menos no está muriando gente repetida.
-                #print(str(person_to_die.person_id) + " - " + person_to_die.sex + " - " + str(person_to_die.age) + " - " + str(myround(person_to_die.age)))
-                if person.person_id in l:
-                    raise Exception("OYE!")
-                l.append(person_to_die.person_id)
-                
                 interval = myround(person_to_die.age)
                 population.ages_hist[self.year + person_to_die.sex][interval] -= 1
                 # Remove person
                 person_to_die.remove_agent()
                 self.remove_person_from_universe(person_to_die)
                 deaths += 1
+                
             # and some random people
             while deaths <= population.mortality:
                 person_to_die = random.choice(population.inhabitants)
@@ -480,6 +458,7 @@ class Universe():
             #### ¿Y si no hay tantan gente infeliz como gente que se tiene que ir?
             ### Solo hay male ya que los he metido primero en la lista
             ### shuffle of inhabitants list ??????
+            
             if population.saldo_migratorio_total < 0:
                 saldo = 0
                 # Consider each inhabitant
@@ -569,9 +548,20 @@ class Universe():
                 dice =  random.random()
                 agent_idx = agent_idx + 1
                 if dice < 0.5:
-                    the_agent = Agents(agent_idx, "M", 0, population)
+                    the_agent = Agents(identifier = agent_idx,
+                                       sex = "M",
+                                       age = 0, 
+                                       population_centre = population,
+                                       is_kid = True,
+                                       maybe_parent = False)
                 else:
-                    the_agent = Agents(agent_idx, "F", 0, population)
+                    the_agent = Agents(identifier = agent_idx,
+                                       sex = "F",
+                                       age = 0,
+                                       population_centre = population,
+                                       is_kid = True,
+                                       mayba_parent = False)
+                    
                 ## Add agent to the universe
                 self.add_person_to_universe(the_agent)
                 # Add agent to population centre
