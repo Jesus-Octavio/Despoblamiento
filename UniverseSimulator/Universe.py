@@ -468,7 +468,7 @@ class Universe():
                     # But, where is the person going?
                     # (BY NOW) I ASSUME THE PERSON GOES TO A LARGE CITY
                     b = person.migrate()
-                    if b:
+                    if b and (isinstance(person.family, Fam_one_person)): # CHANGE LATER
                         # I could assume they leave the universe but not
                         #  self.remove_person_from_universe(person)
                         saldo -= 1
@@ -477,22 +477,30 @@ class Universe():
                         population.ages_hist[self.year + person.sex][interval] -= 1
                         person.remove_agent() # ya esta en person.migrate()
                         
+                        # Remove family (origin)
+                        person.family.remove_family()
+                        
                         # Agent arrives at a large city
                         person.population_centre = random.choice(self.large_cities)
-                
+                        
                         # Add agent to destination 
                         person.add_agent()
+                        
+                        # Add family (destination)
+                        person.family.add_family()
+                        
                         
                         
                     if saldo == population.saldo_migratorio_total:
                         break
                 
         
-            ### PEOPLE WHO ARRIVE IN THE POPULATION CENTRE ### 
+            ### PEOPLE WHO ARRIVE AT THE POPULATION CENTRE ### 
             
             ## SALDO MIGRATORIO
             ## New guys on the town ! Where are they coming from? 
             ## Dont know, just create new people
+            ## CONSIDERING ONLY ONE_PERSON_FAM
             if population.saldo_migratorio_total > 0:
                 new_guys = 0
                 while new_guys < population.saldo_migratorio_total:
@@ -501,7 +509,7 @@ class Universe():
                     # Create agent
                     the_agent = Agents(identifier = agent_idx,
                                        sex = random.choice(["M", "F"]),
-                                       age = random.randrange(25, 101),
+                                       age = random.randrange(25, 101), # Sure?
                                        population_centre = population)
                     
                     # Update family role
@@ -538,6 +546,8 @@ class Universe():
                     pass
                 #else:
                 #    person.age += 1
+                
+            
                     
                     
             ## THOSE WHO ARE NEWBORN BABIES
@@ -589,6 +599,23 @@ class Universe():
             
             # Update year for the population centre
             population.year = int(population.year) + 1
+            
+            #################### TRYING TO BUILD UP FAMILIES ##################
+            # Time to disband families with kids
+            t = 0
+            members = 0
+            for family in population.families["fam_kids"].copy():
+                b = family.disband()
+                if b[1] > 0:
+                    print(b)
+                members += b[1]
+                if b[0]:
+                    t += 1
+            print("DISBANDED FAMILIES %s" % t)
+            print("DISBANDED MEMBERS  %s" % members)
+            print("\n")
+            ###################################################################
+            
             population.update_hist()
             #print(population.year_hist)
             

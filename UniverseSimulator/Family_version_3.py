@@ -18,7 +18,12 @@ class Family():
         
     def add_family(self):
         if isinstance(self, Fam_one_person):
+    
+            # POPULATION_CENTRE ATTRIBUTE OF FAMILIES MUST BE UPDATED 
+            # AT THE SAME TIME AS THE POPULATION_CENTRE ATTRIBUTE FOR AGENTS
+            self.population_centre = self.members.population_centre
             self.population_centre.families["fam_one_person"].append(self)
+            
         elif isinstance(self, Fam_kids):
             self.population_centre.families["fam_kids"].append(self)
         else:
@@ -44,7 +49,7 @@ class Fam_one_person(Family):
         
     def update(self, agent):
         if agent.family:
-            warnings.warn("THIS AGENT  ALREADY HAS A FAMILY!")
+            warnings.warn("THIS AGENT ALREADY HAS A FAMILY!")
         if self.members:
             warnings.warn("THIS FAMILY IS COMPLETE")
         else:
@@ -92,51 +97,47 @@ class Fam_kids(Family):
                 
     
       
-    # Break up of a family when all of the kids are older then 25 yars old
+    # Break up of a family when all of the kids are older then 25 years old
     def disband(self):
         # Comnsider each kid
-        for kid in self.kids:
-            if self.kid.age >= 25:
+        mem = 0
+        for kid in self.kids.copy():
+            if kid.age >= 25:
                 self.kids.remove(kid)
+                kid.family = False
                 my_family = Fam_one_person(kid.population_centre)
                 my_family.update(kid)
-                self.population_centre.families["fam_one_person"].append(my_family)
+                my_family.add_family()
+                mem += 1
             
         # no more kids in the family -> free agents
         if not self.kids: 
             
-            # new one person family for the father
-            my_family = Fam_one_person(self.father.population_centre)
-            my_family.update(self.father)
-            # add fmaily to population centre
-            self.population_centre.families["fam_one_person"].append(my_family)
-            
-            # new one persone fmaily for the mother
-            my_family = Fam_one_person(self.mother.population_centre)
-            my_family.update(self.mother)
-            # add family to population centre
-            self.population_centre.families["fam_one_person"].append(my_family)
-            
             # remove family
             self.population_centre.families["fam_kids"].remove(self)
             
-            return True
+            # new one person family for the father
+            self.father.family = False
+            my_family = Fam_one_person(self.father.population_centre)
+            my_family.update(self.father)
+            # add fmaily to population centre
+            my_family.add_family()
+            
+            # new one persone fmaily for the mother
+            self.mother.family = False
+            my_family = Fam_one_person(self.mother.population_centre)
+            my_family.update(self.mother)
+            # add family to population centre
+            my_family.add_family()
+            
+            mem += 2
+            
+            return [True, mem]
             
         # the family still has kids
         # do not remove family
         else:
-            pass
-            return False
+            return [False, mem]
             
-                
-                
-                
-                
-                    
-                    
-            
-        
-            
-    
-            
-            
+       
+   

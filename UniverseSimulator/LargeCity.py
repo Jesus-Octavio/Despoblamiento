@@ -38,5 +38,9 @@ class LargeCity():
         print("Male  inhabitants : %s."% self.num_men)
         print("Women inhabitants : %s." % self.num_women)
         print("\n")
+        
+        for key in self.families.keys():
+            print("###### FAMILY: "  + key + " : " + str(len(self.families[key])) +   " #######")
+        print("\n")
 
         
