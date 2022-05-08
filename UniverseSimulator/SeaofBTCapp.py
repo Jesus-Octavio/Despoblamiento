@@ -177,7 +177,7 @@ class PopulationCentrePage(Pages, tk.Frame,):
                   command = lambda : controller.show_frame(PageOne)).pack()
     
 
-from tkinterweb import HtmlFrame
+#from tkinterweb import HtmlFrame
     
 
 class PlotPage(tk.Frame, Pages):
@@ -251,15 +251,15 @@ if __name__ == "__main__":
     my_universe.Print()
 
     
-    """    
+        
     for i in range(1, 2):
         my_universe.update()
         my_universe.Print()
     
-    my_universe.regression_metrics()
-    app = SeaofBTCapp(universe = my_universe)
-    app.mainloop()
-    """
-   
+    
+    #my_universe.regression_metrics()
+    #app = SeaofBTCapp(universe = my_universe)
+    #app.mainloop()
+       
 #app = SeaofBTCapp()
 #app.mainloop()

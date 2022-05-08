@@ -17,6 +17,16 @@ class LargeCity():
         self.features = {}
         self.inhabitants = []
         
+        ##################### TRYING TO BUILD UP FAMILES #####################
+        # Goal: families as a dictionary.
+        # I consider several types of family:
+        #    * fam_one_person: single member family -lives alone-
+        #    * fam_kids: family with kids: mother + father`+ kids
+        # I pretend to create a dictionary whose keys are family types and
+        # his values are families
+        self.families = {"fam_one_person" : [],
+                         "fam_kids"       : []}
+        ######################################################################
         
     def Print(self):
         print('---------------------------------------------------')

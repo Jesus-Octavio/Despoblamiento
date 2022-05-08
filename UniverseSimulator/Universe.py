@@ -203,28 +203,17 @@ class Universe():
                     age_range[self.year + sex][key] += int(df_temp[col])
                         
                 for i in range(int(df_temp[col])):
-                    
-                    ############### TRYING TO BUILD UP FAMILES ###############
-                    # Set age
-                    age = random.randint(init, end)
-                    # Create agent
-                    if age < 25:
-                        is_kid = True
-                        maybe_parent = False
-                    elif 25 <= age < 60:
-                        is_kid = False
-                        maybe_parent = True
-                    else:
-                        is_kid = False
-                        maybe_parent = False
-                    ##########################################################
-                    
+                               
+                    # Crate agent
                     the_agent = Agents(identifier = agent_idx,
                                    sex = sex,
-                                   age = age,
-                                   population_centre = population,
-                                   is_kid = is_kid,
-                                   maybe_parent = maybe_parent)
+                                   age = random.randint(init, end),
+                                   population_centre = population)
+                    
+                    ############### TRYING TO BUILD UP FAMILES ###############
+                    the_agent.family_role()
+                    ##########################################################
+
                     # Add agent to population centre
                     the_agent.add_agent()
                     # Add agent to global list
@@ -411,11 +400,12 @@ class Universe():
             ### PEOPLE WHO LEAVE THE POPULATION CENTRE ###
             ## THOSE WHO DIE
             # Who is going to die?
-            # I guess the oldest people (85% of total deaths)...
+            # I suppose the oldest people die (before, some random people died)
+            # If I considere that, this while loop
+            # can be transformed into a for loop
             
-         
             deaths = 0
-            while deaths < math.floor(0.85*population.mortality):
+            while deaths < population.mortality:
                 max_age = 0
                 person_to_die = None
                 for person in population.inhabitants:
@@ -426,11 +416,19 @@ class Universe():
                 # Update dictionary with ages by range:
                 interval = myround(person_to_die.age)
                 population.ages_hist[self.year + person_to_die.sex][interval] -= 1
+                
+                ################ TRYING TO BUILD UP FAMILES ################
+                # Remove family
+                person_to_die.family.remove_family() # It's working !
+                ############################################################
+                
                 # Remove person
                 person_to_die.remove_agent()
                 self.remove_person_from_universe(person_to_die)
                 deaths += 1
-                
+            
+            
+            """
             # and some random people
             while deaths <= population.mortality:
                 person_to_die = random.choice(population.inhabitants)
@@ -442,6 +440,7 @@ class Universe():
                 person_to_die.remove_agent()
                 self.remove_person_from_universe(person_to_die)
                 deaths += 1
+            """
                 
                 
             #print("\n")    
@@ -463,7 +462,7 @@ class Universe():
                 saldo = 0
                 # Consider each inhabitant
                 for person in population.inhabitants:
-                    ### THE MOST UNHAPPUY PEOPLEMUST LEAVE !
+                    ### THE MOST UNHAPPUY PEOPLE MUST LEAVE !
                     
                     # Is the person unhappy? If so -> remove
                     # But, where is the person going?
@@ -478,14 +477,11 @@ class Universe():
                         population.ages_hist[self.year + person.sex][interval] -= 1
                         person.remove_agent() # ya esta en person.migrate()
                         
-                    
+                        # Agent arrives at a large city
                         person.population_centre = random.choice(self.large_cities)
                 
-                        # Update dictionary with ages by range:
-                        #interval = myround(person.age)
-                        #population.ages_hist[self.year + person.sex][interval] -= 1
-                        
-                        person.add_agent() # necesito añadirlo a la ciudad destino
+                        # Add agent to destination 
+                        person.add_agent()
                         
                         
                     if saldo == population.saldo_migratorio_total:
@@ -500,12 +496,24 @@ class Universe():
             if population.saldo_migratorio_total > 0:
                 new_guys = 0
                 while new_guys < population.saldo_migratorio_total:
+                    # Uodate agent identifiers
                     agent_idx = agent_idx + 1
-                    # random.choice(["M", "F"]) same as the dice
-                    the_agent = Agents(agent_idx,
-                                       random.choice(["M", "F"]),
-                                       random.randrange(18, 101),
-                                       population)
+                    # Create agent
+                    the_agent = Agents(identifier = agent_idx,
+                                       sex = random.choice(["M", "F"]),
+                                       age = random.randrange(25, 101),
+                                       population_centre = population)
+                    
+                    # Update family role
+                    the_agent.family_role()
+                    
+                    # Create family for agent
+                    my_family = Fam_one_person(population)
+                    my_family.update(the_agent)
+                    my_family.add_family()
+                    
+                                       
+                    # Add person to the universe
                     self.add_person_to_universe(the_agent)
                     the_agent.add_agent()
                     new_guys += 1
@@ -518,15 +526,6 @@ class Universe():
             
             
             ### UPDATE AGES ###
-            # HAY QUE ACTUALIZAR EN EL MOMENTO ADECUADO. RECIEN NACIDOS CON 1 AÑO !?
-            # EL PROBLEMA EN LA PIRÁMIDE POBLACIONAL ESTÁ EN ESTA LINEA!!!
-            # No estoy actualizando en la pirámide....
-            ## FIXED ERRO !!!
-            #for person in self.universe_persons:
-             #   person.age += 1
-              #  interval = myround(person.age)
-              #  person.population_centre.ages_hist[self.year + person.sex][interval] += 1
-                
             for person in population.inhabitants:
                 #if person.population_centre.population_name not in ["Madrid", "Barcelona"]:
                 interval_1 = myround(person.age)
@@ -542,25 +541,21 @@ class Universe():
                     
                     
             ## THOSE WHO ARE NEWBORN BABIES
-            # Natality: new people with age -1 ¿Male or Female?
+            # Newborns need a family so we nee dto search for parents
+            # Some of them will be assigned to families with previous kids
+            # Some of them will be assigned to new parents
             new_borns = 0
-            while new_borns <= population.natality:
-                dice =  random.random()
+            while new_borns < population.natality:
+                
                 agent_idx = agent_idx + 1
-                if dice < 0.5:
-                    the_agent = Agents(identifier = agent_idx,
-                                       sex = "M",
-                                       age = 0, 
-                                       population_centre = population,
-                                       is_kid = True,
-                                       maybe_parent = False)
-                else:
-                    the_agent = Agents(identifier = agent_idx,
-                                       sex = "F",
+                
+                # Create agent
+                the_agent = Agents(identifier = agent_idx,
+                                       sex = random.choice(["M", "F"]),
                                        age = 0,
-                                       population_centre = population,
-                                       is_kid = True,
-                                       mayba_parent = False)
+                                       population_centre = population)
+                # Update family role
+                the_agent.family_role()
                     
                 ## Add agent to the universe
                 self.add_person_to_universe(the_agent)
@@ -573,6 +568,8 @@ class Universe():
                 population.ages_hist[self.year + the_agent.sex][interval] += 1
                 
                 
+            
+            
             ### UPDATE MORTALITY, NATALITY, .... ###
             d_args_update = {}
             for column in self.cols_update:

@@ -112,11 +112,21 @@ class PopulationCentre():
         
         
     def Print_families(self):
+        
+        kids = 0
+        adults = 0
+        for agent in self.inhabitants:
+            if (agent.is_kid and (not agent.family)):
+                kids += 1
+            elif (agent.is_kid != None) and (agent.maybe_parent != None) and (not agent.family):
+                adults += 1
+        print("KIDS   WITHOUT FAMILY: %s" % kids)
+        print("ADULTS WITHOUT FAMILY: %s" % adults)
         for key in self.families.keys():
             print("###### FAMILY: "  + key + " : " + str(len(self.families[key])) +   " #######")
             #for family in self.families[key]:
-             #   print("---- FAMILY: "  + key + " ----")
-              #  for agent in family.members:
-               #     print("Age %s ; Status %s "% (agent.age, agent.family))
+            #    print("---- FAMILY: "  + key + " ----")
+            #    for agent in family.members:
+            #        print("Age %s ; Status %s "% (agent.age, agent.family))
         print("\n")
     

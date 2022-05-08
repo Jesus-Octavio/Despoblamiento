@@ -12,15 +12,35 @@ warnings.simplefilter("always")
 
 class Family():
     
-    def __init__(self, population_centre):
-        self.population_centre = population_centre
+    def __init__(self):
+        pass
+        
+        
+    def add_family(self):
+        if isinstance(self, Fam_one_person):
+            self.population_centre.families["fam_one_person"].append(self)
+        elif isinstance(self, Fam_kids):
+            self.population_centre.families["fam_kids"].append(self)
+        else:
+            warnings.warn("FAMILY CLASS UNDEFINED")
+            
     
-    
+    def remove_family(self):
+        if isinstance(self, Fam_one_person):
+            self.population_centre.families["fam_one_person"].remove(self)
+        elif isinstance(self, Fam_kids):
+            self.population_centre.families["fam_kids"].remove(self)
+        else:
+            warnings.warn("FAMILY CLASS UNDEFINED")
+            
+        
+        
         
 class Fam_one_person(Family):
     
     def __init__(self, population_centre):
         self.members = None
+        self.population_centre = population_centre
         
     def update(self, agent):
         if agent.family:
@@ -29,11 +49,13 @@ class Fam_one_person(Family):
             warnings.warn("THIS FAMILY IS COMPLETE")
         else:
             self.members = agent
-            agent.family = True
+            #agent.family = True
+            agent.family = self
             
 class Fam_kids(Family):
     
     def __init__(self, population_centre, kids_limit):
+        self.population_centre = population_centre
         self.kids_limit = kids_limit
         self.members = []
         self.father = None
@@ -49,22 +71,25 @@ class Fam_kids(Family):
             else:
                 self.father = agent
                 self.members.append(agent)
-                agent.family = True
+                #agent.family = True
+                agent.family = self
         elif role == "mother":
             if self.mother:
                 warnings.warn("THIS FAMILY ALREADY HAS A MOTHER")
             else:
                 self.mother = agent
                 self.members.append(agent)
-                agent.family = True
+                #agent.family = True
+                agent.family = self
         elif role == "kid":
             if len(self.kids) >= self.kids_limit:
                 warnings.warn("ENOUGH KIDS")
             else:
                 self.kids.append(agent)
                 self.members.append(agent)
-                agent.family = True
-                #warnings.warn("KID NUMBER %s OF %s" % (len(self.kids), self.kids_limit))
+                #agent.family = True
+                agent.family = self
+                
     
       
     # Break up of a family when all of the kids are older then 25 yars old

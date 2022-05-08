@@ -17,8 +17,7 @@ from Family_version_3 import Fam_kids
 
 class Agents():
     
-    def __init__(self, identifier, sex, age, population_centre,
-                 is_kid, maybe_parent): ## TRYING TO BUILD UP FAMILIES
+    def __init__(self, identifier, sex, age, population_centre):
         # AGENTS/PEOPLE CONSTRUCTOR
         self.person_id = identifier
         self.sex = sex
@@ -44,15 +43,15 @@ class Agents():
         ##################### TRYING TO BUILD UP FAMILES #####################
         # Boolean that inidicetes whether an agent is member of a family
         self.family = False
-        self.is_kid = is_kid
-        self.maybe_parent = maybe_parent
+        self.is_kid = None
+        self.maybe_parent = None
         ######################################################################
     
 
 
     ####################### TRYING TO BUILD UP FAMILES #######################
     # When updating, roles change
-    def family_rol(self):
+    def family_role(self):
         if self.age < 25:
             self.is_kid = True
             self.maybe_parent = False
@@ -73,6 +72,10 @@ class Agents():
                 self.population_centre.num_men += 1
             else:
                 self.population_centre.num_women += 1
+                
+        ##################### TRYING TO BULD UO FAMILIES #####################
+        
+        ######################################################################
             
     def remove_agent(self):
         # Remove agent from population centre
