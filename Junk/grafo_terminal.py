@@ -6,6 +6,8 @@ Created on Sat Mar 19 18:21:46 2022
 @author: jesus
 """
 
+import webbrowser
+from threading import Timer
 from dash import Dash, html
 import dash_cytoscape as cyto
 
@@ -27,7 +29,13 @@ app.layout = html.Div([
     )
 ])
 
+def open_browser():
+    webbrowser.open_new("http://127.0.0.1:8050/")
+    
 
-app.run_server(debug=True,
-               host = "127.0.0.1",
-               port = "8050")
+if __name__ == "__main__":
+        
+    Timer(1, open_browser).start()
+    app.run_server(#debug=True,
+                   host = "127.0.0.1",
+                   port = "8050")
