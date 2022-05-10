@@ -28,4 +28,6 @@ app.layout = html.Div([
 ])
 
 
-app.run_server(debug=True)
+app.run_server(debug=True,
+               host = "127.0.0.1",
+               port = "8050")
