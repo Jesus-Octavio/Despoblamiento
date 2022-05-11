@@ -29,7 +29,7 @@ app.title = "Migration Network"
 
 # "Default" parameters
 PERIOD = [2010, 2019]
-POPULATION_CENTRE = 0
+POPULATION_CENTRE = "A"
 
 
 def open_browser():
@@ -40,10 +40,13 @@ def network_graph(period, population_centre):
 
     # Read csv for edges
     edges = pd.read_csv('edges.csv')
+    # Convert Source and Target column to str for future button
     edges["Source"] = edges["Source"].map(str)
     edges["Target"] = edges["Target"].map(str)
+    
     # Read csv for nodes
     nodes = pd.read_csv('nodes.csv')
+    # Convert CODMUN oclumn to str for futre button
     nodes["CODMUN"] = nodes["CODMUN"].map(str)
 
     # Filter record by datetime
@@ -59,7 +62,7 @@ def network_graph(period, population_centre):
         if ((edges['Datetime'][index].year < period[0]) or
             (edges['Datetime'][index].year > period[1])):
             # If out of range -> do not consider the edge
-            edges.drop(axis=0, index=index, inplace=True)
+            edges.drop(axis = 0, index = index, inplace = True)
             continue
         # Add population centre to set
         accountSet.add(edges['Source'][index])
@@ -88,13 +91,15 @@ def network_graph(period, population_centre):
                                              'TransactionAmt', 'Date'], # edge attributes
                                 create_using = nx.MultiDiGraph()) # Graph type to create
     
-    nx.set_node_attributes(G = G,
-                           values = nodes.set_index('CODMUN')['Nombre'].to_dict(),
-                           name = 'Nombre')
+    # Add node attributes
+    nx.set_node_attributes(G = G, # NetworkX Graph
+                           values = nodes.set_index('CODMUN')['Nombre'].to_dict(), # What the nose attribute should be set to
+                           name = 'Nombre') # Name of the node attribute
     
-    nx.set_node_attributes(G = G,
-                           values = nodes.set_index('CODMUN')['Type'].to_dict(),
-                           name = 'Type')
+    # Add node attributes
+    nx.set_node_attributes(G = G, # NetworkX Graph
+                           values = nodes.set_index('CODMUN')['Type'].to_dict(), # What the nose attribute should be set to
+                           name = 'Tipo')  # Name of the node attribute
     
         
     # CUSTOMIZE FOR BEST LAYOUT    
@@ -110,16 +115,16 @@ def network_graph(period, population_centre):
         G.nodes[node]['pos'] = list(pos[node])
 
 
+    #  If no node in shell 2
     if len(shell2) == 0:
         traceRecode = []  
-
-        node_trace = go.Scatter(x = tuple([1]),
+        # Scatter points
+        node_trace = go.Scatter(x = tuple([1]), #
                                 y = tuple([1]),
                                 text = tuple([str(population_centre)]),
                                 textposition = "bottom center",
                                 mode = 'markers+text',
                                 marker = {'size': 50, 'color': 'LightSkyBlue'})
-        
         traceRecode.append(node_trace)
 
         node_trace1 = go.Scatter(x = tuple([1]),
@@ -127,9 +132,9 @@ def network_graph(period, population_centre):
                                  mode = 'markers',
                                  marker = {'size': 50, 'color': 'LightSkyBlue'},
                                  opacity = 0)
-        
         traceRecode.append(node_trace1)
 
+        # figure Settings
         figure = {
             "data": traceRecode,
             "layout": go.Layout(title = 'INTERACTIVE MIGRATION VISUALIZATION',
@@ -171,11 +176,11 @@ def network_graph(period, population_centre):
                             hoverinfo = "text",
                             marker = {'size': 50, 'color': 'LightSkyBlue'})
 
+    # Add nodes
     index = 0
     for node in G.nodes():
         x, y = G.nodes[node]['pos']
-        hovertext = "Nombre: " + str(G.nodes[node]['Nombre']) + "<br>" + "AccountType: " + str(G.nodes[node]['Type'])
-        #text = node1['Account'][index]
+        hovertext = "Nombre: " + str(G.nodes[node]['Nombre']) + "<br>" + "AccountType: " + str(G.nodes[node]['Tipo'])
         text = nodes[nodes["Nombre"] == G.nodes[node]['Nombre']]["CODMUN"].values[0]
         node_trace['x'] += tuple([x])
         node_trace['y'] += tuple([y])
@@ -193,6 +198,7 @@ def network_graph(period, population_centre):
                                     marker = {'size': 20, 'color': 'LightSkyBlue'},
                                     opacity = 0)
 
+    # Add edges
     index = 0
     for edge in G.edges:
         x0, y0 = G.nodes[edge[0]]['pos']
@@ -261,7 +267,7 @@ app.layout = html.Div([
                 children=[
                     dcc.Markdown(d("""
                             **PERIODO DE VISUALIZACION**
-                            Desliza para definir el rango
+                            Desliza para definir el rango en años
                             
                             Ejemplo: 10 equiv. 2010
                             """)),
@@ -298,7 +304,8 @@ app.layout = html.Div([
                         children=[
                             dcc.Markdown(d("""
                             **BUSCA UN MUNICIPIO**
-                            Introduce el sódigo del municipio
+                            
+                            Introduce el código del municipio
                             """)),
                             dcc.Input(id="input1",
                                       type="text",
