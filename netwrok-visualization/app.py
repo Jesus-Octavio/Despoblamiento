@@ -2,14 +2,13 @@
 # -*- coding: utf-8 -*-
 """
 Created on Tue May 10 10:42:06 2022
-
 @author: jesus
 """
 
 
 import dash
-import dash_core_components as dcc
-import dash_html_components as html
+from dash import dcc
+from dash import html
 import networkx as nx
 import plotly.graph_objs as go
 
@@ -30,7 +29,7 @@ app.title = "Migration Network"
 
 # "Default" parameters
 PERIOD = [2010, 2019]
-POPULATION_CENTRE ="A"
+POPULATION_CENTRE = 0
 
 
 def open_browser():
@@ -41,8 +40,11 @@ def network_graph(period, population_centre):
 
     # Read csv for edges
     edges = pd.read_csv('edges.csv')
+    edges["Source"] = edges["Source"].map(str)
+    edges["Target"] = edges["Target"].map(str)
     # Read csv for nodes
     nodes = pd.read_csv('nodes.csv')
+    nodes["CODMUN"] = nodes["CODMUN"].map(str)
 
     # Filter record by datetime
     # Add empty Datetime column to edges dataframe
@@ -58,7 +60,7 @@ def network_graph(period, population_centre):
             (edges['Datetime'][index].year > period[1])):
             # If out of range -> do not consider the edge
             edges.drop(axis=0, index=index, inplace=True)
-            #continue
+            continue
         # Add population centre to set
         accountSet.add(edges['Source'][index])
         accountSet.add(edges['Target'][index])
@@ -259,7 +261,6 @@ app.layout = html.Div([
                 children=[
                     dcc.Markdown(d("""
                             **PERIODO DE VISUALIZACION**
-
                             Desliza para definir el rango
                             
                             Ejemplo: 10 equiv. 2010
@@ -297,7 +298,6 @@ app.layout = html.Div([
                         children=[
                             dcc.Markdown(d("""
                             **BUSCA UN MUNICIPIO**
-
                             Introduce el sódigo del municipio
                             """)),
                             dcc.Input(id="input1",
@@ -326,7 +326,6 @@ app.layout = html.Div([
                         children=[
                             dcc.Markdown(d("""
                             **Hover Data**
-
                             Mouse over values in the graph.
                             """)),
                             html.Pre(id='hover-data', style=styles['pre'])
@@ -338,7 +337,6 @@ app.layout = html.Div([
                         children=[
                             dcc.Markdown(d("""
                             **Click Data**
-
                             Click on points in the graph.
                             """)),
                             html.Pre(id='click-data', style=styles['pre'])
@@ -360,12 +358,11 @@ def update_output(value,input1):
     # to update the global variables of PERIOD and POPULATION_CENTRE
     PERIOD = value
     POPULATION_CENTRE = input1
-    return network_graph(value, int(input1))
+    return network_graph(value, input1)
 
     
 
-    
-    
+      
 ########################## THIS PART CAN BE REMOVED ##########################
 @app.callback(
     dash.dependencies.Output('hover-data', 'children'),
