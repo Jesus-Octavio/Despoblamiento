@@ -180,7 +180,7 @@ def network_graph(period, population_centre):
     index = 0
     for node in G.nodes():
         x, y = G.nodes[node]['pos']
-        hovertext = "Nombre: " + str(G.nodes[node]['Nombre']) + "<br>" + "AccountType: " + str(G.nodes[node]['Tipo'])
+        hovertext = "Nombre: " + str(G.nodes[node]['Nombre']) + "<br>" + "Tipo de entidad: " + str(G.nodes[node]['Tipo'])
         text = nodes[nodes["Nombre"] == G.nodes[node]['Nombre']]["CODMUN"].values[0]
         node_trace['x'] += tuple([x])
         node_trace['y'] += tuple([y])
@@ -204,8 +204,8 @@ def network_graph(period, population_centre):
         x0, y0 = G.nodes[edge[0]]['pos']
         x1, y1 = G.nodes[edge[1]]['pos']
         hovertext = "From: " + str(G.edges[edge]['Source']) + "<br>" + "To: " + str(
-            G.edges[edge]['Target']) + "<br>" + "TransactionAmt: " + str(
-            G.edges[edge]['TransactionAmt']) + "<br>" + "TransactionDate: " + str(G.edges[edge]['Date'])
+            G.edges[edge]['Target']) + "<br>" + "Flujo de personas: " + str(
+            G.edges[edge]['TransactionAmt']) + "<br>" + "Año: " + str(G.edges[edge]['Date'])
         middle_hover_trace['x'] += tuple([(x0 + x1) / 2])
         middle_hover_trace['y'] += tuple([(y0 + y1) / 2])
         middle_hover_trace['hovertext'] += tuple([hovertext])
