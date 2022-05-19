@@ -334,7 +334,7 @@ class Universe():
                                     # If the family has no mother
                                     if not family.mother:
                                         if family.father:
-                                            my_bool = (family.father.age - 5 <= agent.age <= family.father.age - 5) or (agent.age - 5 <= family.father.age <= agent.age + 5)
+                                            my_bool = (family.father.age - 5 <= agent.age <= family.father.age + 5) or (agent.age - 5 <= family.father.age <= agent.age + 5)
                                         if my_bool:
                                             family.update(agent, "mother")
                                             break
@@ -555,15 +555,27 @@ class Universe():
             # Some of them will be assigned to families with previous kids
             # Some of them will be assigned to new parents
             new_borns = 0
+            
+            #################### TRYING TO BUILD UP FAMILIES ##################
+            t0 = 0
+            t1 = 0
+            t2 = 0
+            s = 0
+            for fam in population.families["fam_one_person"]:
+                if fam.members.age in range(30,40):
+                    s += 1
+            print(s)
+            ####################################################################
+            
             while new_borns < population.natality:
                 
                 agent_idx = agent_idx + 1
                 
                 # Create agent
                 the_agent = Agents(identifier = agent_idx,
-                                       sex = random.choice(["M", "F"]),
-                                       age = 0,
-                                       population_centre = population)
+                                    sex = random.choice(["M", "F"]),
+                                    age = 0,
+                                    population_centre = population)
                 # Update family role
                 the_agent.family_role()
                     
@@ -576,6 +588,112 @@ class Universe():
                 # Update dictionary with ages by range:
                 interval = myround(the_agent.age)
                 population.ages_hist[self.year + the_agent.sex][interval] += 1
+                
+                ################## TRYING TO BUILD UP FAMILIES ################
+                # Time to assign kids to families
+                dice = random.uniform(0, 1)
+                
+                if dice < 0.5: # Assign kid to an existing familuy with one kind
+                    for family in population.families["fam_kids"]:
+                        # If available space for kids
+                        if len(family.kids) < family.kids_limit:
+                            t0 += 1
+                            family.update(the_agent, "kid")
+                            break
+                            
+                        if (family.kids_limit == 1) and (len(family.kids) == 1):
+                            t1 += 1
+                            family.kids_limit += 1
+                            family.update(the_agent, "kid")
+                            break
+                    if not the_agent.family:
+                        print("FAMILY NOT FOUND FOR KID DICE < THRES")
+                        
+                        
+                else: # Build up a new family   
+                    
+                    bool_father = False
+                    bool_mother = False
+                            
+                    for family in population.families["fam_one_person"]:
+                                                        
+                        if family.members.sex == "M":
+                            if ((not bool_father) and 
+                                (family.members.maybe_parent) and
+                                (not family.members.is_kid)):
+                                
+                                            
+                                        
+                                if bool_mother:
+                                    my_bool = (my_mother.age - 5 <= family.members.age <= my_mother.age + 5)
+                                    if my_bool:
+                                        my_father = family.members
+                                        my_father_family = family
+                                        bool_father = True
+                                                
+                                            
+                                else:
+                                    if family.members.age in range(random.randint(30,40)):
+                                        my_father = family.members
+                                        my_father_family = family
+                                        bool_father = True
+                                    
+                                
+                        else: #family2.members.sex == "F":
+                            if ((not bool_mother) and 
+                                (family.members.maybe_parent) and
+                                (not family.members.is_kid)):
+                                        
+                                        
+                                if bool_father:
+                                    my_bool = (my_father.age - 5 <= family.members.age <= my_father.age + 5)
+                                    if my_bool:
+                                        my_mother = family.members
+                                        my_mother_family = family
+                                        bool_mother = True
+                                                       
+                                else:
+                                    if family.members.age in range(random.randint(30,40)):
+                                        my_mother = family.members
+                                        my_mother_family = family
+                                        bool_mother = True
+                                
+                        
+                        if (bool_mother) and (bool_father):
+                            my_father.family = False
+                            my_father_family.remove_family()
+                                    
+                            my_mother.family = False
+                            my_mother_family.remove_family()
+                                    
+                            my_family = Fam_kids(population, 1)
+                            my_family.update(my_father, "father")
+                            my_family.update(my_mother, "mother")
+                            my_family.update(the_agent, "kid")
+                            my_family.add_family()
+                                    
+                            t2 += 1
+                            break
+                                
+                if not the_agent.family:
+                    print("FAMILY NOT FOUND FOR KID")
+                    print("\n")
+                            
+                            
+                            
+                        
+                            
+                        
+                        
+            print("BUG0 %s" % t0)
+            print("BUG1 %s" % t1)
+            print("BUG2 %s" % t2)
+                        
+                    
+                
+                ###############################################################
+                
+                
                 
                 
             
@@ -600,6 +718,7 @@ class Universe():
             # Update year for the population centre
             population.year = int(population.year) + 1
             
+            
             #################### TRYING TO BUILD UP FAMILIES ##################
             # Time to disband families with kids
             t = 0
@@ -607,12 +726,12 @@ class Universe():
             for family in population.families["fam_kids"].copy():
                 b = family.disband()
                 if b[1] > 0:
-                    print(b)
+                    pass
                 members += b[1]
                 if b[0]:
                     t += 1
-            print("DISBANDED FAMILIES %s" % t)
-            print("DISBANDED MEMBERS  %s" % members)
+            print("UPDATE -> DISBANDED FAMILIES with kids: %s" % t)
+            print("UPDATE -> DISBANDED MEMBERS           : %s" % members)
             print("\n")
             ###################################################################
             
@@ -798,8 +917,8 @@ class Universe():
             ################### TRYING TO BUILD UP FAMILIES ###################
             population.Print_families()
             ###################################################################
-        for city in self.large_cities:
-            city.Print()
+        #for city in self.large_cities:
+        #    city.Print()
             
     """
     # Not useful anymore

@@ -73,9 +73,7 @@ class Agents():
             else:
                 self.population_centre.num_women += 1
                 
-        ##################### TRYING TO BULD UO FAMILIES #####################
         
-        ######################################################################
             
     def remove_agent(self):
         # Remove agent from population centre
@@ -97,7 +95,7 @@ class Agents():
             # If the person is old enough (just trying to model what we said about families..)
             # I think we will are able to "create" famillies but i have 
             # doubts about some of variables (i will try later)
-            if self.age > 18:
+            if self.age > 25: # better 18
                 self.new_migration = 1
                 self.migration = self.new_migration
                 # That person is leaving the population centre 

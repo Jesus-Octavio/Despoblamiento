@@ -123,7 +123,7 @@ class PopulationCentre():
         print("KIDS   WITHOUT FAMILY: %s" % kids)
         print("ADULTS WITHOUT FAMILY: %s" % adults)
         for key in self.families.keys():
-            print("###### FAMILY: "  + key + " : " + str(len(self.families[key])) +   " #######")
+            print("FAMILY: "  + key + " -> " + str(len(self.families[key])))
             #for family in self.families[key]:
             #    print("---- FAMILY: "  + key + " ----")
             #    for agent in family.members:

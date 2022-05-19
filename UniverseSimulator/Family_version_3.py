@@ -36,7 +36,7 @@ class Family():
         elif isinstance(self, Fam_kids):
             self.population_centre.families["fam_kids"].remove(self)
         else:
-            warnings.warn("FAMILY CLASS UNDEFINED")
+            warnings.warn("UNABLE TO REMOVE FAMILY")
             
         
         
@@ -56,6 +56,7 @@ class Fam_one_person(Family):
             self.members = agent
             #agent.family = True
             agent.family = self
+    
             
 class Fam_kids(Family):
     
@@ -94,8 +95,11 @@ class Fam_kids(Family):
                 self.members.append(agent)
                 #agent.family = True
                 agent.family = self
-                
-    
+        else:
+            warnings.warn("UNAVAILABLE ROLE")
+        
+        
+        
       
     # Break up of a family when all of the kids are older then 25 years old
     def disband(self):
@@ -114,7 +118,8 @@ class Fam_kids(Family):
         if not self.kids: 
             
             # remove family
-            self.population_centre.families["fam_kids"].remove(self)
+            #self.population_centre.families["fam_kids"].remove(self)
+            self.remove_family()
             
             # new one person family for the father
             self.father.family = False
