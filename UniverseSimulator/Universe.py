@@ -228,6 +228,8 @@ class Universe():
             population.ages_hist = age_range
             #print(population.ages_hist)
             population.update_population_hist()
+            
+            
         return agents
             
     
@@ -443,94 +445,94 @@ class Universe():
                 queue_families.appendleft(fam)
         
         
-        # PROBLEMA DE ESTA INICIALIZACION: HIJOS CON EDADES MUY HOMOGENEAS
-        # Search for kids
-        for agent in population.inhabitants:
+            # PROBLEMA DE ESTA INICIALIZACION: HIJOS CON EDADES MUY HOMOGENEAS
+            # Search for kids
+            for agent in population.inhabitants:
             
-            # If the agent is neither a kid nor a parent
-            if (not agent.is_kid) and (not agent.maybe_parent):
-                # Build up one person family
-                my_family = Fam_one_person(population)
-                my_family.update(agent)
-                population.families["fam_one_person"].append(my_family)
+                # If the agent is neither a kid nor a parent
+                if (not agent.is_kid) and (not agent.maybe_parent):
+                    # Build up one person family
+                    my_family = Fam_one_person(population)
+                    my_family.update(agent)
+                    population.families["fam_one_person"].append(my_family)
                         
-            # If the agent is a kid
-            elif agent.is_kid and (not agent.family):
-                # Consider first family in queue
-                # If there's room for the kid
-                if len(queue_families[0].kids) < queue_families[0].kids_limit:
-                    queue_families[0].update(agent, "kid")
-                # If there's no room for the kid
-                else:
-                    # The family has as many kids as possible so add to the universe
+                    # If the agent is a kid
+                elif agent.is_kid and (not agent.family):
+                    # Consider first family in queue
+                    # If there's room for the kid
+                    if len(queue_families[0].kids) < queue_families[0].kids_limit:
+                        queue_families[0].update(agent, "kid")
+                    # If there's no room for the kid
+                    else:
+                        # The family has as many kids as possible so add to the universe
+                        population.families["fam_kids"].append(queue_families[0])
+                        # and remode from the queue
+                        queue_families.popleft()
+                        # The kid must be added to the next family
+                        queue_families[0].update(agent, "kid")
+            # In case there are any families in the queu, move them to the universe
+            while len(queue_families) > 0:
+                if len(queue_families[0].kids) > 0:
                     population.families["fam_kids"].append(queue_families[0])
-                    # and remode from the queue
-                    queue_families.popleft()
-                    # The kid must be added to the next family
-                    queue_families[0].update(agent, "kid")
-        # In case there are any families in the queu, move them to the universe
-        while len(queue_families) > 0:
-            if len(queue_families[0].kids) > 0:
-                population.families["fam_kids"].append(queue_families[0])
-            queue_families.popleft()
+                queue_families.popleft()
         
 
-        # Search for parents
-        for agent in population.inhabitants:
-            if agent.maybe_parent and (not agent.family):
-                # Consider each family with kids
-                for family in population.families["fam_kids"]:
-                    my_bool = True
-                    # If the agent is a male
-                    if agent.sex == "M":
-                        # If the family has no father
-                        if not family.father:
-                            # Check parents/kids ages are compatible
-                            for kid in family.kids:
-                                my_bool = agent.age >= kid.age + 25
+            # Search for parents
+            for agent in population.inhabitants:
+                if agent.maybe_parent and (not agent.family):
+                    # Consider each family with kids
+                    for family in population.families["fam_kids"]:
+                        my_bool = True
+                        # If the agent is a male
+                        if agent.sex == "M":
+                            # If the family has no father
+                            if not family.father:
+                                # Check parents/kids ages are compatible
+                                for kid in family.kids:
+                                    my_bool = agent.age >= kid.age + 25
                         
-                            if my_bool:
-                                # If theres no mother
-                                if not family.mother:
-                                    family.update(agent, "father")
-                                    break
-                                else: # Verify ages
-                                    my_bool = (family.mother.age - 5 <= agent.age <= family.mother.age - 5) or (agent.age - 5 <= family.mother.age <= agent.age + 5)
-                                    if my_bool:
+                                if my_bool:
+                                    # If theres no mother
+                                    if not family.mother:
                                         family.update(agent, "father")
                                         break
-                                    else:
-                                        pass
+                                    else: # Verify ages
+                                        my_bool = (family.mother.age - 5 <= agent.age <= family.mother.age - 5) or (agent.age - 5 <= family.mother.age <= agent.age + 5)
+                                        if my_bool:
+                                            family.update(agent, "father")
+                                            break
+                                        else:
+                                            pass
                                     
                     
-                    else: #agent.sex = "F"
-                        if not family.mother:
-                            # If the family has no father
-                            for kid in family.kids:
-                                # Check parents/kids ages are compatible
-                                my_bool = agent.age >= kid.age + 25
+                        else: #agent.sex = "F"
+                            if not family.mother:
+                                # If the family has no father
+                                for kid in family.kids:
+                                    # Check parents/kids ages are compatible
+                                    my_bool = agent.age >= kid.age + 25
                         
-                            if my_bool:
-                                # if theres no father
-                                if not family.mother:
-                                    family.update(agent, "mother")
-                                    break
-                                else: # verify ages
-                                    my_bool = (family.father.age - 5 <= agent.age <= family.father.age + 5) or (agent.age - 5 <= family.father.age <= agent.age + 5)
-                                    if my_bool:
+                                if my_bool:
+                                    # if theres no father
+                                    if not family.mother:
                                         family.update(agent, "mother")
                                         break
-                                    else:
-                                        pass
+                                    else: # verify ages
+                                        my_bool = (family.father.age - 5 <= agent.age <= family.father.age + 5) or (agent.age - 5 <= family.father.age <= agent.age + 5)
+                                        if my_bool:
+                                            family.update(agent, "mother")
+                                            break
+                                        else:
+                                            pass
                                 
             
-            # agent is neither compatible with kids or partner
-            if not agent.family:
-                my_family = Fam_one_person(population)
-                my_family.update(agent)
-                population.families["fam_one_person"].append(my_family)
+                # agent is neither compatible with kids or partner
+                if not agent.family:
+                    my_family = Fam_one_person(population)
+                    my_family.update(agent)
+                    population.families["fam_one_person"].append(my_family)
                                     
-                                  
+            
         
         
     ###########################################################################

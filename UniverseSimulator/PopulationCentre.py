@@ -83,6 +83,12 @@ class PopulationCentre():
         self.women_hist.append(int(self.num_women))
         self.saldo_hist.append(int(self.saldo_migratorio_total))
         self.year_hist.append(int(self.year))
+        
+    ####################### TRYING TO BUILD UP FAMILES ########################
+    def update_families_hist(self):
+        self.families_hist[self.year] = {"num_fam_one_person" : len(self.families["fam_one_person"]),
+                                         "num_fam_kids" : len(self.families["fam_kids"])}
+    ###########################################################################
             
     
     def update_mean_happiness(self):
@@ -112,10 +118,10 @@ class PopulationCentre():
         print('---------------------------------------------------')
         print('|           Population centre ' + str(self.population_id) +'               |')
         print('---------------------------------------------------')
-        print("Population Centre : %s." % self.population_name)
-        print("Total inhabitants : %s." % (self.num_men + self.num_women))
-        print("Male  inhabitants : %s." % self.num_men)
-        print("Women inhabitants : %s." % self.num_women)
+        print("Population Centre  : %s." % self.population_name)
+        print("Total  inhabitants : %s." % (self.num_men + self.num_women))
+        print("Male   inhabitants : %s." % self.num_men)
+        print("Female inhabitants : %s." % self.num_women)
         
         
         print("\n")
