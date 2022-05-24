@@ -64,6 +64,8 @@ class PopulationCentre():
         # his values are families
         self.families = {"fam_one_person" : [],
                          "fam_kids"       : []}
+        # Store families evolution
+        self.families_hist = {}
         ######################################################################
         
     
@@ -74,13 +76,14 @@ class PopulationCentre():
         self.saldo_migratorio_total = int(saldott)
         
         
-    def update_hist(self):
+    def update_population_hist(self):
         self.natality_hist.append(int(self.natality))
         self.mortality_hist.append(int(self.mortality))
         self.men_hist.append(int(self.num_men))
         self.women_hist.append(int(self.num_women))
         self.saldo_hist.append(int(self.saldo_migratorio_total))
         self.year_hist.append(int(self.year))
+            
     
     def update_mean_happiness(self):
         """
@@ -96,7 +99,14 @@ class PopulationCentre():
         for agent in self.inhabitants:
             mean_happiness = mean_happiness + (agent.happiness  / num_inhabitants)
         return mean_happiness
+    
+    
+    ####################### TRYING TO BUILD UP FAMILES #######################
+    #def update_families_hist(self):
+    #    self.families_hist[self.year] = {}
         
+    ###########################################################################    
+    
         
     def Print(self):
         print('---------------------------------------------------')
@@ -106,7 +116,7 @@ class PopulationCentre():
         print("Total inhabitants : %s." % (self.num_men + self.num_women))
         print("Male  inhabitants : %s." % self.num_men)
         print("Women inhabitants : %s." % self.num_women)
-        #print("HIATORIAS : %s." % self.ages_hist)
+        
         
         print("\n")
         
@@ -122,11 +132,38 @@ class PopulationCentre():
                 adults += 1
         print("KIDS   WITHOUT FAMILY: %s" % kids)
         print("ADULTS WITHOUT FAMILY: %s" % adults)
+        print("\n")
         for key in self.families.keys():
             print("FAMILY: "  + key + " -> " + str(len(self.families[key])))
-            #for family in self.families[key]:
-            #    print("---- FAMILY: "  + key + " ----")
-            #    for agent in family.members:
-            #        print("Age %s ; Status %s "% (agent.age, agent.family))
+        print("\n")
+        
+        
+        for family in self.families["fam_kids"]:
+            if (not family.father) and (family.kids) and (not family.mother):
+                print("FAMILY WITHOUT PARENTS")
+            elif (not family.father) and (family.kids):
+                print("FAMILY WITHOUT FATHER")
+            elif (not family.mother) and (family.kids):
+                print("FAMILY WITHOUT MOTHER")
+            elif (family.mother) and (family.father) and (not family.kids):
+                print("FAMILY WITHOUT KIDS BUT WITH PARENTS")
+
+        """
+        for family in self.families["fam_kids"]:
+            print("--- NEW FAM ---")
+            mmax = 0
+            for elem  in family.kids:
+                if elem.age > mmax:
+                    mmax = elem.age
+            for member in family.members:
+                print("AGE %s" % member.age)
+            if family.mother.age < mmax + 25 or family.father.age < mmax + 25:
+                print("\n")
+            if family.mother.age < mmax + 25:
+                print("MOMMY %s, KID %s" % (family.mother.age, mmax))
+            if family.father.age < mmax + 25:
+                print("DADDY %s, KID %s" % (family.father.age, mmax))
+        """
+            
         print("\n")
     

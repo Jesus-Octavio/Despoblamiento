@@ -104,7 +104,8 @@ class Fam_kids(Family):
     # Break up of a family when all of the kids are older then 25 years old
     def disband(self):
         # Comnsider each kid
-        mem = 0
+        mem_kid = 0
+        mem_parent = 0
         for kid in self.kids.copy():
             if kid.age >= 25:
                 self.kids.remove(kid)
@@ -112,7 +113,7 @@ class Fam_kids(Family):
                 my_family = Fam_one_person(kid.population_centre)
                 my_family.update(kid)
                 my_family.add_family()
-                mem += 1
+                mem_kid += 1
             
         # no more kids in the family -> free agents
         if not self.kids: 
@@ -128,21 +129,21 @@ class Fam_kids(Family):
             # add fmaily to population centre
             my_family.add_family()
             
-            # new one persone fmaily for the mother
+            # new one persone family for the mother
             self.mother.family = False
             my_family = Fam_one_person(self.mother.population_centre)
             my_family.update(self.mother)
             # add family to population centre
             my_family.add_family()
             
-            mem += 2
+            mem_parent += 2
             
-            return [True, mem]
+            return [True, mem_kid, mem_parent]
             
         # the family still has kids
         # do not remove family
         else:
-            return [False, mem]
+            return [False, mem_kid, mem_parent]
             
        
    
