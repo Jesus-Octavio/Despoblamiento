@@ -199,6 +199,13 @@ class PlotPage(tk.Frame, Pages):
             #frame.pack(fill = "both", expand = True)
             #frame.load_url(url = 'file:///home/jesus/Escritorio/Despoblamiento/UniverseSimulator/primer.html')
             
+        def button_3_plot():
+            fig = controller.universe.plot_families(int(Pages._id))    
+            py.plot(fig, filename = "piramide.html", auto_open = True)
+            #frame = HtmlFrame(self)
+            #frame.pack(fill = "both", expand = True)
+            #frame.load_url(url = 'file:///home/jesus/Escritorio/Despoblamiento/UniverseSimulator/primer.html')
+            
         
         global comein_pic
         
@@ -222,6 +229,10 @@ class PlotPage(tk.Frame, Pages):
                   command = button_2_plot).pack()
         
         tk.Button(self,
+                  text="FAMILIAS: EVOLUCIÓN TEMPORAL",
+                  command = button_3_plot).pack()
+        
+        tk.Button(self,
                   text = "ATRÁS",
                   command = lambda: controller.show_frame(PopulationCentrePage)).pack()
         
@@ -241,8 +252,8 @@ if __name__ == "__main__":
     # Toy dataframe
     my_df = pd.read_csv("data_aumentada_years.csv")
     my_families_df = pd.read_csv("families.csv")
-    my_df = my_df[my_df["CODMUN"].isin([39035, 39085])]
-    my_families_df = my_families_df[my_families_df["CODMUN"].isin([39035, 39085])]
+    my_df = my_df[my_df["CODMUN"].isin([39035])]
+    my_families_df = my_families_df[my_families_df["CODMUN"].isin([39035])]
     #my_df = my_df[my_df["CODMUN"]]
     
     year = 2012
@@ -252,14 +263,14 @@ if __name__ == "__main__":
 
     
         
-    for i in range(1, 1):
+    for i in range(1, 5):
         my_universe.update()
         my_universe.Print()
     
     
     #my_universe.regression_metrics()
-    #app = SeaofBTCapp(universe = my_universe)
-    #app.mainloop()
+    app = SeaofBTCapp(universe = my_universe)
+    app.mainloop()
        
 #app = SeaofBTCapp()
 #app.mainloop()

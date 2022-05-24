@@ -8,7 +8,6 @@ Created on Fri Mar 11 14:01:22 2022
 
 import plotly.express as px
 import plotly.graph_objects as go
-import plotly.subplots as sp
 import pandas as pd
 import numpy as np
 

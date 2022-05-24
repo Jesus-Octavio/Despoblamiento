@@ -32,7 +32,6 @@ import numpy as np
 import random, time, math, sys
 import plotly.express as px
 import plotly.graph_objects as go
-import plotly.subplots as sp
 from plotly.subplots import make_subplots
 import plotly.offline as py
 import warnings
@@ -226,8 +225,10 @@ class Universe():
             
             # Update dictionary with age ranges and historial
             population.ages_hist = age_range
-            #print(population.ages_hist)
+            # Update historial for ages
             population.update_population_hist()
+            # Update historial for families
+            population.update_families_hist()
             
             
         return agents
@@ -532,7 +533,8 @@ class Universe():
                     my_family.update(agent)
                     population.families["fam_one_person"].append(my_family)
                                     
-            
+            # Update families hist
+            population.update_families_hist()
         
         
     ###########################################################################
@@ -888,9 +890,11 @@ class Universe():
             
             # Update year for the population centre
             population.year = int(population.year) + 1
-            
+            # Update historial for ages
             population.update_population_hist()
-            #print(population.year_hist)
+            # Update historial for families
+            population.update_families_hist()
+            
             
             
             
@@ -937,6 +941,8 @@ class Universe():
         
         df = pd.DataFrame.from_dict(data)
         
+        print(df)
+        
         fig = go.Figure()
         
         fig.add_trace(go.Scatter(x = df["YEAR"], y = np.log(df["HOM"]),
@@ -970,7 +976,7 @@ class Universe():
         
     def plot_population_pyramid(self, population_code):
         # METHOD FOR PLOTTING POPULATION HISTORIAL IN A
-        # SPECIFIED POPULATION CENTRE. ALDO PLOTS POPULATIUON PYRAMID
+        # SPECIFIED POPULATION CENTRE. ALDO PLOTS POPULATION PYRAMID
 
         #population_code = int(input("Please, enter a population code: "))
         
@@ -1038,8 +1044,8 @@ class Universe():
     
     
     
-    """
-    def plot_families(self, population_code, year):
+    
+    def plot_families(self, population_code):
         
         my_population = False
         for population in self.population_centres:
@@ -1048,7 +1054,97 @@ class Universe():
         
         if my_population == False:
             raise Exception("Population centre not found")
-   """ 
+            
+        df = pd.DataFrame.from_dict(my_population.families_hist).transpose()
+        df = df.iloc[::-1]
+        l = [x + y for (x,y) in zip(my_population.men_hist, my_population.women_hist)]
+        l.reverse()
+        
+        # Creating two subplots
+        fig = make_subplots(rows = 1, cols = 2, specs = [[{}, {}]],
+                 shared_xaxes = True, shared_yaxes = False,
+                 vertical_spacing = 0.002) 
+        
+        fig.add_trace(go.Bar(
+                y = list(df.index.astype(str)),
+                x = list(df["num_fam_one_person"]),
+                name = 'Familias unipersonales',
+                orientation='h',
+                marker=dict(
+                        color = 'rgba(246, 78, 139, 0.6)',
+                        line = dict(color = 'rgba(246, 78, 139, 1.0)', width = 3)
+                )
+        ), 1, 1)
+
+        fig.add_trace(go.Bar(
+                y = list(df.index.astype(str)),
+                x = list(df["num_fam_kids"]),
+                name = 'Familias con hijos',
+                orientation = 'h',
+                marker = dict(
+                        color = 'rgba(58, 71, 80, 0.6)',
+                        line = dict(color = 'rgba(58, 71, 80, 1.0)', width = 3)
+                )
+        ), 1, 1)
+
+        fig.update_layout(barmode='stack')
+
+        fig.add_trace(go.Scatter(
+                x = l,
+                y = list(df.index.astype(str)),
+                mode = 'lines+markers',
+                line_color = 'rgb(128, 0, 128)',
+                name = 'Población total',
+        ), 1, 2)
+        
+        fig.update_layout(
+                title = 'Evolución del número de familias y población en %s'
+                        % my_population.population_name,
+                yaxis = dict(
+                        showgrid = False,
+                        showline = False,
+                        showticklabels = True,
+                        domain = [0, 0.85],
+                ),
+            
+                yaxis2 = dict(
+                        showgrid = False,
+                        showline = True,  
+                        showticklabels = False,
+                        linecolor = 'rgba(102, 102, 102, 0.8)',
+                        linewidth = 2,
+                        domain = [0, 0.85],
+                ),  
+                
+                xaxis = dict(
+                        zeroline = False,
+                        showline = False,
+                        showticklabels = True,
+                        showgrid = True,
+                        domain = [0, 0.42],
+                ),
+
+                xaxis2 = dict(
+                        zeroline = False,
+                        showline = False,
+                        showticklabels = True,
+                        showgrid = True,
+                        domain = [0.47, 1],
+                        side = 'top',
+                        dtick = int(round((max(l) - min(l))/5)),
+                ),
+                        
+                legend = dict(x = 0.029, y = 1.038, font_size = 12),
+                margin = dict(l = 100, r = 20, t = 70, b = 70),
+                paper_bgcolor = 'rgb(248, 248, 255)',
+                plot_bgcolor  = 'rgb(248, 248, 255)',
+        )   
+
+        return fig
+
+        
+        
+   
         
     
     def regression_metrics(self):
