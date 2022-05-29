@@ -40,8 +40,8 @@ LARGE_FONT= ("Verdana", 12)
 
 class Pages:
     name = None
-    _id = None
-    
+    _id  = None
+    year = None
 
 class SeaofBTCapp(Pages, tk.Tk):
 
@@ -58,7 +58,7 @@ class SeaofBTCapp(Pages, tk.Tk):
         self.universe = universe
         self.frames = {}
 
-        for F in (StartPage, PageOne, PopulationCentrePage, PlotPage):
+        for F in (StartPage, PageOne, PopulationCentrePage, PlotPage, YearsPage):
 
             frame = F(container, self)
 
@@ -111,10 +111,6 @@ class PageOne(tk.Frame):
         global comein_pic
         
         tk.Frame.__init__(self, parent)
-        
-        #comein_pic = ImageTk.PhotoImage(Image.open("/home/jesus/Escritorio/come.jpg"))
-        #comein_pic_label = tk.Label(self, image=comein_pic)
-        
         
         tk.Button(self,
                   text = "CONSULTA", 
@@ -177,35 +173,53 @@ class PopulationCentrePage(Pages, tk.Frame,):
                   command = lambda : controller.show_frame(PageOne)).pack()
     
 
-#from tkinterweb import HtmlFrame
-    
 
+class YearsPage(Pages, tk.Frame,):
+    
+    def __init__(self, parent, controller):
+        
+        def plotter(year):
+            fig = controller.universe.plot_population_pyramid_2(int(Pages._id), year)    
+            py.plot(fig, filename = "piramide.html", auto_open = True)
+        
+        tk.Frame.__init__(self, parent)
+        
+        
+        #_id = int(Pages._id)
+        #for item in range(len(controller.universe.population_centres)):
+        #    if item.population_id == _id:
+        #        my_population = item
+        
+        years = list(controller.universe.population_centres[0].year_hist)
+        
+        for year in years:
+            tk.Button(self,
+                  text = "AÑO %s" % year, 
+                  command = lambda year=year: plotter(int(year))).pack()
+                  
+        tk.Button(self,
+                  text = "ATRÁS",
+                  command = lambda: controller.show_frame(PlotPage)).pack()
+
+ 
 class PlotPage(tk.Frame, Pages):
     
     def __init__(self, parent, controller):
         
-        
         def button_1_plot():
             fig = controller.universe.plot_population_hist(int(Pages._id))    
             py.plot(fig, filename = "multiline.html", auto_open = True)
-            #frame = HtmlFrame(self)
-            #frame.pack(fill = "both", expand = True)
-            #frame.load_url(url = 'file:///home/jesus/Escritorio/Despoblamiento/UniverseSimulator/primer.html')
             
         def button_2_plot():
             fig = controller.universe.plot_population_pyramid(int(Pages._id))    
             py.plot(fig, filename = "piramide.html", auto_open = True)
-            #frame = HtmlFrame(self)
-            #frame.pack(fill = "both", expand = True)
-            #frame.load_url(url = 'file:///home/jesus/Escritorio/Despoblamiento/UniverseSimulator/primer.html')
+            
             
         def button_3_plot():
             fig = controller.universe.plot_families(int(Pages._id))    
             py.plot(fig, filename = "piramide.html", auto_open = True)
-            #frame = HtmlFrame(self)
-            #frame.pack(fill = "both", expand = True)
-            #frame.load_url(url = 'file:///home/jesus/Escritorio/Despoblamiento/UniverseSimulator/primer.html')
             
+
         
         global comein_pic
         
@@ -214,8 +228,6 @@ class PlotPage(tk.Frame, Pages):
         tk.Button(self,
                   text = "CONSULTA ACUTAL",
                   command = self.confirm_query).pack()
-        #button3.pack()
-        #button3.bind("<Button-1>", self.pp())
         
         
         self.label = tk.Label(self, text = "SELECCIONE TIPO DE GRÁFICO").pack()
@@ -226,7 +238,9 @@ class PlotPage(tk.Frame, Pages):
         
         tk.Button(self,
                   text="PIRÁMIDE POBLACIONAL: EVOLUCIÓN TEMPORAL",
-                  command = button_2_plot).pack()
+                  command = lambda: controller.show_frame(YearsPage)).pack()
+                 # In case we want all the population pyramids shown in the same window
+                 #command = lambda: button_2_plot).pack()
         
         tk.Button(self,
                   text="FAMILIAS: EVOLUCIÓN TEMPORAL",
@@ -239,6 +253,7 @@ class PlotPage(tk.Frame, Pages):
         button_destroy = tk.Button(self,
                                    text = "CERRAR",
                                    command = lambda: controller.destroy())
+        
         button_destroy.pack(side = "bottom")
         
      
@@ -252,8 +267,8 @@ if __name__ == "__main__":
     # Toy dataframe
     my_df = pd.read_csv("data_aumentada_years.csv")
     my_families_df = pd.read_csv("families.csv")
-    my_df = my_df[my_df["CODMUN"].isin([39035])]
-    my_families_df = my_families_df[my_families_df["CODMUN"].isin([39035])]
+    my_df = my_df[my_df["CODMUN"].isin([39085])]
+    my_families_df = my_families_df[my_families_df["CODMUN"].isin([39085])]
     #my_df = my_df[my_df["CODMUN"]]
     
     year = 2012

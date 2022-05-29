@@ -974,6 +974,60 @@ class Universe():
         #fig.show()
         return fig
         
+    
+    
+    def plot_population_pyramid_2(self, population_code, year):
+        # I guess the plot for population pyramids was a mess
+        # Too many pyramids for a tiny window
+        # So I thik is better to show each pyramid individually
+        
+        my_population = False
+        for population in self.population_centres:
+            if population.population_id == population_code:
+                my_population = population
+        
+        if my_population == False:
+            raise Exception("Population centre not found")
+        
+        
+        df = pd.DataFrame.from_dict(my_population.ages_hist)
+        my_cols = [col for col in df.columns if str(year) in col]
+        df = df[my_cols]
+        
+        
+        fig = go.Figure()
+        
+        fig.add_trace(go.Bar(
+                          y = df.index.values.tolist(),
+                          x = df.iloc[:, 0],
+                          name  = "Hombres",
+                          marker_color = "blue",
+                          orientation = "h",
+                          showlegend = True),
+                          )
+            
+        fig.add_trace(go.Bar(
+                          y = df.index.values.tolist(),
+                          x = - df.iloc[:, 1],
+                          name  = "Mujeres",
+                          marker_color = "orange",
+                          orientation = "h",
+                          showlegend = True),
+                          )
+            
+        fig.update_layout(barmode = 'relative',
+                               bargap = 0.0, bargroupgap = 0)
+        fig.update_xaxes(tickangle = 90)
+        
+        fig.update_layout(
+                    title_text="Pirámide poblacional de %s en %s " 
+                        % (my_population.population_name, year),
+                    bargap = 0.0, bargroupgap = 0,)
+        #fig.show()
+        return fig
+        
+       
+        
     def plot_population_pyramid(self, population_code):
         # METHOD FOR PLOTTING POPULATION HISTORIAL IN A
         # SPECIFIED POPULATION CENTRE. ALDO PLOTS POPULATION PYRAMID
@@ -1025,11 +1079,11 @@ class Universe():
             
             fig.update_layout(barmode = 'relative',
                                bargap = 0.0, bargroupgap = 0)
-            fig.update_xaxes(tickangle=90)
+            fig.update_xaxes(tickangle = 90)
 
 
             #for t in fig2.data:
-             #   fig.append_trace(t , row = row, col = 1)
+            #    fig.append_trace(t , row = row, col = 1)
                 
             row += 1
             
