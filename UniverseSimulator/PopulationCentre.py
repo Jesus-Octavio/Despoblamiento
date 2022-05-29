@@ -106,12 +106,7 @@ class PopulationCentre():
         return mean_happiness
     
     
-    ####################### TRYING TO BUILD UP FAMILES #######################
-    #def update_families_hist(self):
-    #    self.families_hist[self.year] = {}
-        
-    ###########################################################################    
-    
+      
         
     def Print(self):
         print('---------------------------------------------------')

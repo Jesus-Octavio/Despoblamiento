@@ -71,7 +71,7 @@ def myround(x, base=5):
 class Universe():
     # MAIN CLASS
     
-    def __init__(self, df, df_families, year):
+    def __init__(self, df, df_families, df_features, year):
         # CONSTRUCTOR
         global agent_idx
         agent_idx = 0
@@ -84,6 +84,7 @@ class Universe():
         ##################### TRYING TO BUILD UP FAMILES #####################
         # Read data from dataframe (FAMILIES)
         self.families_dataframe = df_families
+        self.features_dataframe = df_features
         # Do we need a list of families in the complete universe????
         ######################################################################
         
@@ -124,15 +125,19 @@ class Universe():
         for population in range(self.main_dataframe.shape[0]):
             # Select specific row
             columns_list = self.main_dataframe.columns
-            df_temp = self.main_dataframe.iloc[population]
+            df_temp   = self.main_dataframe.iloc[population]
+            df_temp_2 = self.features_dataframe.iloc[population]
+            
             
             # Select some features about the population centre
             # Trying to compute a fits "happiness coefficient" to be able to
             # make decisions about migrations explained later)
-            features = {"population_height_sea"  : df_temp["ALTITUD_M"],
-                       "population_dist_pop"     : df_temp["DISTNUC10KM_M"],
-                       "populaiton_dist_highway" : df_temp["DISTAUTOPAUTOV_M"],
-                       "population_dist_train"   : df_temp["DISTESTACFERROC_M"]}
+            features = {"population_height_sea"  : df_temp_2["MEANMDT"],
+                       "population_dist_pop"     : df_temp_2["MEANMDT"],
+                       "populaiton_dist_highway" : df_temp_2["MEANDISAUT"],
+                       "population_dist_train"   : df_temp_2["MEANDISFERR"]}
+            
+            
             
             my_cols = ["HOM" + self.year, "MUJ" + self.year,
                        "NAT" + self.year, "MOR" + self.year, 

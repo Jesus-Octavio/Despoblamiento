@@ -267,25 +267,28 @@ if __name__ == "__main__":
     # Toy dataframe
     my_df = pd.read_csv("data_aumentada_years.csv")
     my_families_df = pd.read_csv("families.csv")
+    my_features_df = pd.read_csv("my_estructura_df.csv")
+     
     my_df = my_df[my_df["CODMUN"].isin([39085])]
     my_families_df = my_families_df[my_families_df["CODMUN"].isin([39085])]
     #my_df = my_df[my_df["CODMUN"]]
     
     year = 2012
     
-    my_universe = Universe(my_df, my_families_df, year)
+    my_universe = Universe(my_df, my_families_df, 
+                           my_features_df, year)
     my_universe.Print()
 
     
         
-    for i in range(1, 5):
+    for i in range(1, 4):
         my_universe.update()
         my_universe.Print()
     
     
     #my_universe.regression_metrics()
-    app = SeaofBTCapp(universe = my_universe)
-    app.mainloop()
+    #app = SeaofBTCapp(universe = my_universe)
+    #app.mainloop()
        
 #app = SeaofBTCapp()
 #app.mainloop()

@@ -1,4 +1,4 @@
-d#!/usr/bin/env python
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
 Created on Mon Mar 14 10:39:38 2022

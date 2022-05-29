@@ -12,7 +12,7 @@ warnings.simplefilter("always")
 
 class Family():
     
-    def __init__(self):c
+    def __init__(self):
         pass
         
         
